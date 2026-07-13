@@ -30,13 +30,8 @@ nav { display: flex; justify-content: space-between; align-items: center; max-wi
 .stat-card p { font-size: 2rem; font-weight: 800; color: #FDCB6E; }
 section { max-width: 900px; margin: 2rem auto; padding: 2rem; }
 section h2 { font-size: 2rem; margin-bottom: 1.5rem; text-align: center; }
-
-/* BUSCADOR */
 .buscador-box { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; justify-content: center; }
 .buscador-box input { padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; font-size: 1rem; width: 200px; text-align: center; }
-.buscador-box button { padding: 12px 25px; }
-
-/* LISTA DE NFTs */
 .nft-lista { display: flex; flex-direction: column; gap: 10px; }
 .nft-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 15px 20px; flex-wrap: wrap; gap: 10px; cursor: pointer; transition: all 0.3s; }
 .nft-item:hover { border-color: rgba(108, 92, 231, 0.5); }
@@ -45,17 +40,14 @@ section h2 { font-size: 2rem; margin-bottom: 1.5rem; text-align: center; }
 .nft-item-info p { color: #A0A0B0; font-size: 0.85rem; }
 .nft-item-acciones { display: flex; gap: 8px; }
 .btn-small { padding: 8px 15px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
-
 .mining-section, .presale-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; padding: 3rem 2rem; }
-select, input { padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; font-size: 1rem; width: 100%; margin-bottom: 1rem; }
-select option { background: #0C0C1E; }
 .nft-info { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; background: rgba(255,255,255,0.03); border-radius: 15px; padding: 1.5rem; margin-bottom: 1rem; }
 .nft-info p { color: #A0A0B0; font-size: 0.8rem; }
 .nft-info span { font-size: 1.2rem; font-weight: 700; display: block; margin-top: 5px; }
 .mining-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
 .mining-buttons button { flex: 1; min-width: 150px; }
 .buy-form { text-align: center; }
-.buy-form input { max-width: 400px; text-align: center; }
+.buy-form input { max-width: 400px; text-align: center; padding: 12px 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; font-size: 1rem; width: 100%; margin-bottom: 1rem; }
 #estimatedTokens { color: #FDCB6E; font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
 footer { text-align: center; padding: 2rem; background: #08081A; border-top: 1px solid rgba(255,255,255,0.05); color: #A0A0B0; }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -95,15 +87,11 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 <section>
 <h2>🎨 Tus NFTs Mineros</h2>
-
-<!-- BUSCADOR -->
 <div class="buscador-box">
 <input type="number" id="nftIdInput" placeholder="ID del NFT (ej: 0, 1, 2...)" min="0">
 <button class="btn-gold btn-small" id="btnAgregar">➕ Agregar NFT</button>
 </div>
 <div id="mensajeBuscador"></div>
-
-<!-- LISTA DE NFTs AGREGADOS -->
 <div id="nftLista" class="nft-lista">
 <p style="text-align:center;color:#A0A0B0;">Conecta tu wallet y agrega NFTs por ID</p>
 </div>
@@ -112,7 +100,6 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 <section class="mining-section">
 <h2>⛏️ Minería de FANS</h2>
 <p style="text-align:center;color:#A0A0B0;margin-bottom:1rem;" id="nftSeleccionadoInfo">Selecciona un NFT de tu lista</p>
-
 <div class="nft-info" id="nftInfo" style="display:none;">
 <div><p>📅 Fecha</p><span id="nftFecha">-</span></div>
 <div><p>⭐ Nivel</p><span id="nftNivel">-</span></div>
@@ -144,7 +131,8 @@ var tokenContract;
 var nftContract;
 var presaleContract;
 var currentNFTSelected = null;
-var listaNFTs = []; // Array para guardar los NFTs agregados
+var listaNFTs = [];
+var tokenDecimals = 9; // Por defecto 9
 
 var CONTRACTS = {
 token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
@@ -152,12 +140,9 @@ nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
 presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
 
-// Cargar NFTs guardados al iniciar
 function cargarNFTsGuardados() {
 var guardados = localStorage.getItem('nfts_fans');
-if (guardados) {
-listaNFTs = JSON.parse(guardados);
-}
+if (guardados) { listaNFTs = JSON.parse(guardados); }
 }
 
 function guardarNFTs() {
@@ -177,8 +162,6 @@ document.getElementById('btnClaim').addEventListener('click', claimReward);
 document.getElementById('btnLevelUp').addEventListener('click', levelUp);
 document.getElementById('bnbAmount').addEventListener('input', calcularTokens);
 document.getElementById('btnBuy').addEventListener('click', buyTokens);
-
-// Buscar con Enter
 document.getElementById('nftIdInput').addEventListener('keypress', function(e) {
 if (e.key === 'Enter') agregarNFT();
 });
@@ -203,18 +186,29 @@ await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ ch
 }
 }
 
-var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+// ABI con decimals incluido
+var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
 var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"n","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+
 var presaleABI = [{"inputs":[],"name":"tokensPorBnb","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokensVendidos","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"}];
 
 tokenContract = new web3.eth.Contract(tokenABI, CONTRACTS.token);
 nftContract = new web3.eth.Contract(nftABI, CONTRACTS.nft);
 presaleContract = new web3.eth.Contract(presaleABI, CONTRACTS.presale);
 
+// Leer decimales del token
+try {
+tokenDecimals = parseInt(await tokenContract.methods.decimals().call());
+} catch (e) {
+tokenDecimals = 9;
+}
+
 btn.textContent = '✅ Conectado';
 btn.classList.add('conectado');
 document.getElementById('walletAddress').style.display = 'inline';
 document.getElementById('walletAddress').textContent = userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+
 await cargarDatos();
 mostrarListaNFTs();
 } catch (error) {
@@ -226,11 +220,15 @@ if (error.code !== 4001) alert('❌ Error: ' + error.message);
 async function cargarDatos() {
 if (!userAccount) return;
 
+// BALANCE CON DECIMALES CORRECTOS
 try {
-var balance = await tokenContract.methods.balanceOf(userAccount).call();
+var balanceCrudo = await tokenContract.methods.balanceOf(userAccount).call();
+var symbol = await tokenContract.methods.symbol().call();
+var balanceReal = balanceCrudo / Math.pow(10, tokenDecimals);
+
 document.getElementById('tokenBalance').style.display = 'inline';
-document.getElementById('tokenBalance').textContent = '💰 ' + Number(web3.utils.fromWei(balance, 'ether')).toLocaleString() + ' FANS';
-} catch (e) {}
+document.getElementById('tokenBalance').textContent = '💰 ' + Number(balanceReal).toLocaleString() + ' ' + symbol;
+} catch (e) { console.log('No se pudo leer balance'); }
 
 try {
 var vendidos = await presaleContract.methods.tokensVendidos().call();
@@ -243,7 +241,6 @@ document.getElementById('totalNFTs').textContent = nextId.toString();
 } catch (e) {}
 }
 
-// ========== AGREGAR NFT POR ID ==========
 async function agregarNFT() {
 if (!userAccount) { alert('⚠️ Conecta tu wallet primero'); return; }
 
@@ -253,7 +250,6 @@ var mensaje = document.getElementById('mensajeBuscador');
 
 if (id === '') { alert('⚠️ Ingresa un ID'); return; }
 
-// Verificar si ya está en la lista
 if (listaNFTs.includes(id)) {
 mensaje.innerHTML = '<div class="mensaje mensaje-error">⚠️ Ese NFT ya está en tu lista</div>';
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
@@ -263,7 +259,6 @@ return;
 try {
 mensaje.innerHTML = '<div class="mensaje">🔄 Verificando NFT #' + id + '...</div>';
 
-// Verificar que existe y eres el dueño
 var owner = await nftContract.methods.ownerOf(id).call();
 
 if (owner.toLowerCase() !== userAccount.toLowerCase()) {
@@ -272,7 +267,6 @@ setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 return;
 }
 
-// Agregar a la lista
 listaNFTs.push(id);
 guardarNFTs();
 
@@ -280,16 +274,14 @@ mensaje.innerHTML = '<div class="mensaje mensaje-ok">✅ NFT #' + id + ' agregad
 document.getElementById('nftIdInput').value = '';
 
 mostrarListaNFTs();
-
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 
 } catch (e) {
-mensaje.innerHTML = '<div class="mensaje mensaje-error">❌ NFT #' + id + ' no encontrado o error</div>';
+mensaje.innerHTML = '<div class="mensaje mensaje-error">❌ NFT #' + id + ' no encontrado</div>';
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 }
 }
 
-// ========== MOSTRAR LISTA DE NFTs ==========
 function mostrarListaNFTs() {
 var contenedor = document.getElementById('nftLista');
 
@@ -300,7 +292,7 @@ return;
 
 contenedor.innerHTML = '';
 
-listaNFTs.forEach(function(id, index) {
+listaNFTs.forEach(function(id) {
 var item = document.createElement('div');
 item.className = 'nft-item';
 if (currentNFTSelected === id) item.classList.add('activo');
@@ -314,7 +306,6 @@ item.innerHTML = '<div class="nft-item-info">' +
 '<button class="btn-small btn-red" data-id="' + id + '" data-accion="eliminar">🗑️ Quitar</button>' +
 '</div>';
 
-// Click en el item = seleccionar
 item.addEventListener('click', function(e) {
 if (e.target.tagName === 'BUTTON') return;
 seleccionarNFTDeLista(id);
@@ -323,7 +314,6 @@ seleccionarNFTDeLista(id);
 contenedor.appendChild(item);
 });
 
-// Eventos para los botones
 document.querySelectorAll('.nft-item-acciones button').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
 e.stopPropagation();
@@ -343,7 +333,6 @@ function seleccionarNFTDeLista(id) {
 currentNFTSelected = id;
 document.getElementById('nftSeleccionadoInfo').textContent = 'NFT #' + id + ' seleccionado';
 
-// Cargar datos del NFT
 nftContract.methods.infoNFT(id).call().then(function(info) {
 nftContract.methods.obtenerMinadoPorNivel(info.nivel).call().then(function(minado) {
 document.getElementById('nftInfo').style.display = 'grid';
@@ -351,7 +340,7 @@ document.getElementById('nftFecha').textContent = new Date(Number(info.fechaNaci
 document.getElementById('nftNivel').textContent = info.nivel;
 document.getElementById('nftMinado').textContent = Number(web3.utils.fromWei(minado, 'ether')).toFixed(2) + ' FANS';
 });
-}).catch(function(e) {
+}).catch(function() {
 alert('Error al leer NFT #' + id);
 });
 
@@ -379,17 +368,15 @@ var btn = document.getElementById('btnMint');
 btn.disabled = true;
 btn.textContent = '🔄 Minteando...';
 
-var tx = await nftContract.methods.mintearNFTGratis().send({ from: userAccount });
+await nftContract.methods.mintearNFTGratis().send({ from: userAccount });
 
-// Obtener el ID del NFT minteado (el último)
 var nextId = await nftContract.methods.siguienteTokenId().call();
-var nuevoId = parseInt(nextId) - 1;
+var nuevoId = (parseInt(nextId) - 1).toString();
 
 alert('✅ ¡NFT #' + nuevoId + ' minteado! Se agregó a tu lista.');
 
-// Agregar automáticamente a la lista
-if (!listaNFTs.includes(nuevoId.toString())) {
-listaNFTs.push(nuevoId.toString());
+if (!listaNFTs.includes(nuevoId)) {
+listaNFTs.push(nuevoId);
 guardarNFTs();
 mostrarListaNFTs();
 }
@@ -405,7 +392,7 @@ btn.textContent = '🎨 Mintear NFT Gratis';
 }
 
 async function claimReward() {
-if (!currentNFTSelected && currentNFTSelected !== 0) { alert('⚠️ Selecciona un NFT de tu lista primero'); return; }
+if (!currentNFTSelected && currentNFTSelected !== '0') { alert('⚠️ Selecciona un NFT de tu lista primero'); return; }
 try {
 document.getElementById('miningStatus').textContent = '🔄 Reclamando...';
 await nftContract.methods.reclamarRecompensa(currentNFTSelected).send({ from: userAccount });
@@ -416,7 +403,7 @@ seleccionarNFTDeLista(currentNFTSelected);
 }
 
 async function levelUp() {
-if (!currentNFTSelected && currentNFTSelected !== 0) { alert('⚠️ Selecciona un NFT de tu lista primero'); return; }
+if (!currentNFTSelected && currentNFTSelected !== '0') { alert('⚠️ Selecciona un NFT de tu lista primero'); return; }
 try {
 document.getElementById('miningStatus').textContent = '🔄 Subiendo...';
 await nftContract.methods.subirNivel(currentNFTSelected).send({ from: userAccount });
