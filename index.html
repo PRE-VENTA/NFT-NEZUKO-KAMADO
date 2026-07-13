@@ -88,9 +88,8 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 <div id="qrModal" class="modal">
 <div class="modal-content">
 <h3>📱 Conectar desde Móvil</h3>
-<p>Escanea o toca un botón para abrir tu wallet</p>
+<p>Escanea o toca un botón</p>
 <div id="qrCode" style="background:white;padding:20px;border-radius:15px;display:inline-block;"></div>
-<p style="margin-top:10px;color:#FDCB6E;font-size:0.8rem;word-break:break-all;" id="qrUri"></p>
 <button class="app-btn metamask" id="btnOpenMetaMask">🦊 Abrir MetaMask</button>
 <button class="app-btn trust" id="btnOpenTrust">🔷 Abrir Trust Wallet</button>
 <button class="btn-red btn-small" onclick="cerrarModal()">❌ Cancelar</button>
@@ -161,7 +160,6 @@ var currentNFTSelected = null;
 var listaNFTs = [];
 var tokenDecimals = 9;
 var walletConnectProvider = null;
-var currentWCUri = '';
 
 var CONTRACTS = {
 token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
@@ -205,24 +203,20 @@ walletConnectProvider = null;
 }
 }
 
-// ========== CONECTAR PC (METAMASK) ==========
 async function conectarPC() {
 if (userAccount) return;
-
 if (typeof window.ethereum === 'undefined') {
 alert('⚠️ Instala MetaMask: https://metamask.io');
 return;
 }
-await iniciarConexion(window.ethereum, 'connectWallet');
+await iniciarConexion(window.ethereum);
 }
 
-// ========== CONECTAR MÓVIL (WALLETCONNECT) ==========
 async function conectarMovil() {
 if (userAccount) return;
 
-// Si MetaMask está en el mismo celular, conectar directo
 if (typeof window.ethereum !== 'undefined') {
-await iniciarConexion(window.ethereum, 'connectMobile');
+await iniciarConexion(window.ethereum);
 return;
 }
 
@@ -234,38 +228,35 @@ chainId: 56
 
 walletConnectProvider.on('display_uri', function(err, payload) {
 var uri = payload.params[0];
-currentWCUri = uri;
 
 document.getElementById('qrModal').style.display = 'flex';
-document.getElementById('qrUri').textContent = uri;
 
 var qrImg = '<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(uri) + '" style="max-width:250px;">';
 document.getElementById('qrCode').innerHTML = qrImg;
 
-// Configurar botones para abrir apps
 document.getElementById('btnOpenMetaMask').onclick = function() {
-window.open('https://metamask.app.link/wc?uri=' + encodeURIComponent(uri), '_blank');
+window.location.href = 'https://metamask.app.link/wc?uri=' + encodeURIComponent(uri);
 };
 document.getElementById('btnOpenTrust').onclick = function() {
-window.open('https://link.trustwallet.com/wc?uri=' + encodeURIComponent(uri), '_blank');
+window.location.href = 'https://link.trustwallet.com/wc?uri=' + encodeURIComponent(uri);
 };
 });
 
 await walletConnectProvider.enable();
 document.getElementById('qrModal').style.display = 'none';
-await iniciarConexion(walletConnectProvider, 'connectMobile');
+await iniciarConexion(walletConnectProvider);
 
 } catch (e) {
 console.error('Error:', e);
 document.getElementById('qrModal').style.display = 'none';
-if (e.message && e.message !== 'User closed modal') {
-alert('❌ Error: ' + e.message);
+if (walletConnectProvider) {
+walletConnectProvider.disconnect().catch(function(){});
+walletConnectProvider = null;
 }
 }
 }
 
-// ========== INICIAR CONEXIÓN (COMÚN) ==========
-async function iniciarConexion(provider, botonId) {
+async function iniciarConexion(provider) {
 var btnPc = document.getElementById('connectWallet');
 var btnMovil = document.getElementById('connectMobile');
 
@@ -284,7 +275,7 @@ await provider.request({ method: 'wallet_addEthereumChain', params: [{ chainId: 
 }
 
 var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
-var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"n","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"n","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
 var presaleABI = [{"inputs":[],"name":"tokensPorBnb","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokensVendidos","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"}];
 
 tokenContract = new web3.eth.Contract(tokenABI, CONTRACTS.token);
@@ -392,17 +383,60 @@ else if (accion === 'eliminar') eliminarNFT(id);
 });
 }
 
-function seleccionarNFTDeLista(id) {
+async function seleccionarNFTDeLista(id) {
 currentNFTSelected = id;
 document.getElementById('nftSeleccionadoInfo').textContent = 'NFT #' + id + ' seleccionado';
-nftContract.methods.infoNFT(id).call().then(function(info) {
-nftContract.methods.obtenerMinadoPorNivel(info.nivel).call().then(function(minado) {
+
+try {
+var info = await nftContract.methods.infoNFT(id).call();
+var minado = await nftContract.methods.obtenerMinadoPorNivel(info.nivel).call();
+
 document.getElementById('nftInfo').style.display = 'grid';
 document.getElementById('nftFecha').textContent = new Date(Number(info.fechaNacimiento) * 1000).toLocaleDateString();
 document.getElementById('nftNivel').textContent = info.nivel;
 document.getElementById('nftMinado').textContent = Number(web3.utils.fromWei(minado, 'ether')).toFixed(2) + ' FANS';
-});
-}).catch(function(){});
+
+// Intentar cargar imagen del NFT desde tokenURI
+try {
+var tokenURI = await nftContract.methods.tokenURI(id).call();
+console.log('Token URI:', tokenURI);
+
+// Si es IPFS, convertir a URL HTTP
+var imageUrl = '';
+if (tokenURI.startsWith('ipfs://')) {
+imageUrl = tokenURI.replace('ipfs://', 'https://ipfs.io/ipfs/');
+} else if (tokenURI.startsWith('https://')) {
+// Puede ser un JSON con metadata
+var response = await fetch(tokenURI);
+var metadata = await response.json();
+if (metadata.image) {
+imageUrl = metadata.image;
+if (imageUrl.startsWith('ipfs://')) {
+imageUrl = imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+}
+}
+}
+
+if (imageUrl) {
+var nftInfoDiv = document.getElementById('nftInfo');
+// Agregar imagen si no existe
+if (!document.getElementById('nftImagen')) {
+var imgDiv = document.createElement('div');
+imgDiv.style.gridColumn = '1 / -1';
+imgDiv.innerHTML = '<img id="nftImagen" src="' + imageUrl + '" style="max-width:200px;border-radius:15px;margin:0 auto;display:block;">';
+nftInfoDiv.appendChild(imgDiv);
+} else {
+document.getElementById('nftImagen').src = imageUrl;
+}
+}
+} catch (e) {
+console.log('No se pudo cargar imagen:', e.message);
+}
+
+} catch (e) {
+console.error('Error:', e);
+}
+
 mostrarListaNFTs();
 document.querySelector('.mining-section').scrollIntoView({behavior: 'smooth'});
 }
@@ -414,6 +448,9 @@ if (currentNFTSelected === id) {
 currentNFTSelected = null;
 document.getElementById('nftInfo').style.display = 'none';
 document.getElementById('nftSeleccionadoInfo').textContent = 'Selecciona un NFT de tu lista';
+// Quitar imagen
+var img = document.getElementById('nftImagen');
+if (img) img.parentElement.remove();
 }
 mostrarListaNFTs();
 }
