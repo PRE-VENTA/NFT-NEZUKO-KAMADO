@@ -63,7 +63,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 .app-btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; width: 100%; margin: 5px 0; }
 .app-btn.metamask { background: #6C5CE7; }
 .app-btn.trust { background: #00B894; }
-#nftImagenContainer { margin-top: 10px; }
+#nftImagenContainer { margin-top: 10px; text-align: center; }
 #nftImagenContainer img { max-width: 250px; border-radius: 15px; display: block; margin: 0 auto; }
 @media (max-width: 600px) { .hero h1 { font-size: 2rem; } .nft-info { grid-template-columns: 1fr; } .mining-buttons { flex-direction: column; } .nft-item { flex-direction: column; text-align: center; } }
 </style>
@@ -206,7 +206,7 @@ walletConnectProvider = null;
 async function conectarPC() {
 if (userAccount) return;
 if (typeof window.ethereum === 'undefined') {
-alert('⚠️ Instala MetaMask');
+alert('Instala MetaMask');
 return;
 }
 await iniciarConexion(window.ethereum);
@@ -303,32 +303,32 @@ document.getElementById('totalNFTs').textContent = nextId.toString();
 }
 
 async function agregarNFT() {
-if (!userAccount) { alert('⚠️ Conecta tu wallet primero'); return; }
+if (!userAccount) { alert('Conecta tu wallet primero'); return; }
 var idInput = document.getElementById('nftIdInput');
 var id = idInput.value.trim();
 var mensaje = document.getElementById('mensajeBuscador');
-if (id === '') { alert('⚠️ Ingresa un ID'); return; }
+if (id === '') { alert('Ingresa un ID'); return; }
 if (listaNFTs.includes(id)) {
-mensaje.innerHTML = '<div class="mensaje mensaje-error">⚠️ Ya está en tu lista</div>';
+mensaje.innerHTML = '<div class="mensaje mensaje-error">Ya esta en tu lista</div>';
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 return;
 }
 try {
-mensaje.innerHTML = '<div class="mensaje">🔄 Verificando...</div>';
+mensaje.innerHTML = '<div class="mensaje">Verificando...</div>';
 var owner = await nftContract.methods.ownerOf(id).call();
 if (owner.toLowerCase() !== userAccount.toLowerCase()) {
-mensaje.innerHTML = '<div class="mensaje mensaje-error">❌ No eres el dueño</div>';
+mensaje.innerHTML = '<div class="mensaje mensaje-error">No eres el dueno</div>';
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 return;
 }
 listaNFTs.push(id);
 guardarNFTs();
-mensaje.innerHTML = '<div class="mensaje mensaje-ok">✅ NFT #' + id + ' agregado</div>';
+mensaje.innerHTML = '<div class="mensaje mensaje-ok">NFT #' + id + ' agregado</div>';
 document.getElementById('nftIdInput').value = '';
 mostrarListaNFTs();
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 } catch (e) {
-mensaje.innerHTML = '<div class="mensaje mensaje-error">❌ No encontrado</div>';
+mensaje.innerHTML = '<div class="mensaje mensaje-error">No encontrado</div>';
 setTimeout(function() { mensaje.innerHTML = ''; }, 3000);
 }
 }
@@ -344,22 +344,25 @@ listaNFTs.forEach(function(id) {
 var item = document.createElement('div');
 item.className = 'nft-item';
 if (currentNFTSelected === id) item.classList.add('activo');
-item.innerHTML = '<div class="nft-item-info"><h4>🐉 NFT #' + id + '</h4><p>Clic para seleccionar</p></div>' +
-'<div class="nft-item-acciones"><button class="btn-small btn-gold" data-id="' + id + '" data-accion="seleccionar">✅</button>' +
-'<button class="btn-small btn-red" data-id="' + id + '" data-accion="eliminar">🗑️</button></div>';
+item.innerHTML = '<div class="nft-item-info"><h4>NFT #' + id + '</h4><p>Clic para seleccionar</p></div>' +
+'<div class="nft-item-acciones"><button class="btn-small btn-gold sel-btn" data-id="' + id + '">✅</button>' +
+'<button class="btn-small btn-red del-btn" data-id="' + id + '">🗑️</button></div>';
 item.addEventListener('click', function(e) {
 if (e.target.tagName === 'BUTTON') return;
 seleccionarNFTDeLista(id);
 });
 contenedor.appendChild(item);
 });
-document.querySelectorAll('.nft-item-acciones button').forEach(function(btn) {
+document.querySelectorAll('.sel-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
 e.stopPropagation();
-var id = this.getAttribute('data-id');
-var accion = this.getAttribute('data-accion');
-if (accion === 'seleccionar') seleccionarNFTDeLista(id);
-else eliminarNFT(id);
+seleccionarNFTDeLista(this.getAttribute('data-id'));
+});
+});
+document.querySelectorAll('.del-btn').forEach(function(btn) {
+btn.addEventListener('click', function(e) {
+e.stopPropagation();
+eliminarNFT(this.getAttribute('data-id'));
 });
 });
 }
@@ -383,10 +386,21 @@ var response = await fetch(jsonUrl);
 var metadata = await response.json();
 var imageUrl = metadata.image || '';
 if (imageUrl) {
-var imgTag = '<img src="' + imageUrl + '" style="max-width:250px;border-radius:15px;display:block;margin:0 auto;"';
-imgTag += ' onerror="this.style.display='none'">';
-imgTag += '<p style="color:#FDCB6E;margin-top:8px;">' + (metadata.name || 'Nivel ' + info.nivel) + '</p>';
-imgContainer.innerHTML = imgTag;
+imgContainer.innerHTML = '';
+var img = document.createElement('img');
+img.src = imageUrl;
+img.style.maxWidth = '250px';
+img.style.borderRadius = '15px';
+img.style.display = 'block';
+img.style.margin = '0 auto';
+img.onerror = function() { this.style.display = 'none'; };
+imgContainer.appendChild(img);
+
+var caption = document.createElement('p');
+caption.style.color = '#FDCB6E';
+caption.style.marginTop = '8px';
+caption.textContent = metadata.name || ('Nivel ' + info.nivel);
+imgContainer.appendChild(caption);
 } else {
 imgContainer.innerHTML = '';
 }
@@ -404,13 +418,14 @@ guardarNFTs();
 if (currentNFTSelected === id) {
 currentNFTSelected = null;
 document.getElementById('nftInfo').style.display = 'none';
+document.getElementById('nftSeleccionadoInfo').textContent = 'Selecciona un NFT de tu lista';
 document.getElementById('nftImagenContainer').innerHTML = '';
 }
 mostrarListaNFTs();
 }
 
 async function mintNFT() {
-if (!userAccount) { alert('⚠️ Conecta tu wallet primero'); return; }
+if (!userAccount) { alert('Conecta tu wallet primero'); return; }
 try {
 var btn = document.getElementById('btnMint');
 btn.disabled = true; btn.textContent = 'Minteando...';
@@ -425,22 +440,22 @@ finally { var btn = document.getElementById('btnMint'); btn.disabled = false; bt
 }
 
 async function claimReward() {
-if (!currentNFTSelected && currentNFTSelected !== '0') { alert('⚠️ Selecciona un NFT'); return; }
+if (!currentNFTSelected && currentNFTSelected !== '0') { alert('Selecciona un NFT'); return; }
 try {
 document.getElementById('miningStatus').textContent = 'Reclamando...';
 await nftContract.methods.reclamarRecompensa(currentNFTSelected).send({ from: userAccount });
-document.getElementById('miningStatus').textContent = '✅ FANS reclamados!';
+document.getElementById('miningStatus').textContent = 'FANS reclamados!';
 await cargarDatos();
 seleccionarNFTDeLista(currentNFTSelected);
 } catch (e) { document.getElementById('miningStatus').textContent = 'Error: ' + e.message; }
 }
 
 async function levelUp() {
-if (!currentNFTSelected && currentNFTSelected !== '0') { alert('⚠️ Selecciona un NFT'); return; }
+if (!currentNFTSelected && currentNFTSelected !== '0') { alert('Selecciona un NFT'); return; }
 try {
 document.getElementById('miningStatus').textContent = 'Subiendo...';
 await nftContract.methods.subirNivel(currentNFTSelected).send({ from: userAccount });
-document.getElementById('miningStatus').textContent = '✅ Nivel subido!';
+document.getElementById('miningStatus').textContent = 'Nivel subido!';
 await cargarDatos();
 seleccionarNFTDeLista(currentNFTSelected);
 } catch (e) { document.getElementById('miningStatus').textContent = 'Error: ' + e.message; }
@@ -452,9 +467,9 @@ if (bnb > 0) document.getElementById('estimatedTokens').textContent = 'Recibiras
 }
 
 async function buyTokens() {
-if (!userAccount) { alert('⚠️ Conecta tu wallet primero'); return; }
+if (!userAccount) { alert('Conecta tu wallet primero'); return; }
 var bnb = document.getElementById('bnbAmount').value;
-if (!bnb || bnb <= 0) { alert('⚠️ Ingresa una cantidad'); return; }
+if (!bnb || bnb <= 0) { alert('Ingresa una cantidad'); return; }
 try {
 var btn = document.getElementById('btnBuy');
 btn.disabled = true; btn.textContent = 'Comprando...';
