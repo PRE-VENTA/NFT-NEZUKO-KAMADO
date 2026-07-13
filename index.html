@@ -132,7 +132,7 @@ var nftContract;
 var presaleContract;
 var currentNFTSelected = null;
 var listaNFTs = [];
-var tokenDecimals = 9; // Por defecto 9
+var tokenDecimals = 9;
 
 var CONTRACTS = {
 token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
@@ -170,8 +170,42 @@ if (e.key === 'Enter') agregarNFT();
 async function conectar() {
 var btn = document.getElementById('connectWallet');
 if (userAccount) return;
-if (typeof window.ethereum === 'undefined') { alert('⚠️ Instala MetaMask'); return; }
 
+// ========== DETECTAR SI ES CELULAR ==========
+var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+if (isMobile) {
+// Si no detecta MetaMask, intentar abrir la app
+if (typeof window.ethereum === 'undefined') {
+var abrirMetaMask = confirm(
+'📱 Estás en un celular.\n\n' +
+'✅ Acepta para abrir MetaMask\n' +
+'❌ Cancela si usas Trust Wallet'
+);
+
+if (abrirMetaMask) {
+var urlActual = window.location.href;
+window.location.href = 'https://metamask.app.link/dapp/' + urlActual.replace('https://', '').replace('http://', '');
+return;
+} else {
+alert(
+'📱 Para conectarte desde celular:\n\n' +
+'🔹 Abre esta página DENTRO del navegador de MetaMask\n' +
+'🔹 O usa Trust Wallet > DApps\n' +
+'🔹 O usa una PC con MetaMask'
+);
+return;
+}
+}
+}
+
+// ========== VERIFICAR METAMASK ==========
+if (typeof window.ethereum === 'undefined') {
+alert('⚠️ Instala MetaMask: https://metamask.io');
+return;
+}
+
+// ========== CONECTAR ==========
 try {
 web3 = new Web3(window.ethereum);
 var accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -186,7 +220,6 @@ await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [{ ch
 }
 }
 
-// ABI con decimals incluido
 var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
 var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"n","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
@@ -197,7 +230,6 @@ tokenContract = new web3.eth.Contract(tokenABI, CONTRACTS.token);
 nftContract = new web3.eth.Contract(nftABI, CONTRACTS.nft);
 presaleContract = new web3.eth.Contract(presaleABI, CONTRACTS.presale);
 
-// Leer decimales del token
 try {
 tokenDecimals = parseInt(await tokenContract.methods.decimals().call());
 } catch (e) {
@@ -220,7 +252,6 @@ if (error.code !== 4001) alert('❌ Error: ' + error.message);
 async function cargarDatos() {
 if (!userAccount) return;
 
-// BALANCE CON DECIMALES CORRECTOS
 try {
 var balanceCrudo = await tokenContract.methods.balanceOf(userAccount).call();
 var symbol = await tokenContract.methods.symbol().call();
