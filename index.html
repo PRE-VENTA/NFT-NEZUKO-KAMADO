@@ -3,87 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Token SUPREMACY</title>
+<title>⚡ Token SUPREMACY - NFT Mining</title>
+<link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
 </head>
-<body style="background:#0C0C1E; color:white; font-family:Arial; padding:50px; text-align:center;">
+<body>
 
-<h1>⚡ TOKEN SUPREMACY</h1>
-
-<button onclick="conectar()" style="padding:20px 40px; font-size:20px; background:#6C5CE7; color:white; border:none; border-radius:10px; cursor:pointer;">
-🔌 CONECTAR WALLET
+<!-- HEADER -->
+<header>
+<nav>
+<div class="logo">⚡ TOKEN SUPREMACY</div>
+<div class="wallet-info">
+<button id="connectWallet" class="btn-connect" onclick="connectWallet()">
+🔌 Conectar Wallet
 </button>
+<span id="walletAddress" style="display:none;"></span>
+<span id="tokenBalance" class="balance">0 SUPREMACY</span>
+</div>
+</nav>
+</header>
 
-<div id="info" style="margin-top:30px; font-size:18px;"></div>
+<!-- HERO -->
+<section class="hero">
+<h1>🐉 Mintea NFTs y Gana Tokens</h1>
+<p>NFTs gratuitos con sistema de niveles y minería de tokens SUPREMACY en BNB Smart Chain</p>
+<div class="hero-buttons">
+<button id="mintNFTBtn" class="btn-gold" onclick="mintNFT()">🎨 Mintear NFT Gratis</button>
+<button id="buyTokensBtn" class="btn-bnb" onclick="irAPreventa()">💰 Comprar Tokens</button>
+</div>
+</section>
 
-<script>
-let web3;
-let userAccount;
+<!-- STATS -->
+<section class="stats">
+<div class="stat-card">
+<h3>💎 Tokens por BNB</h3>
+<p id="tokensPorBnb">Cargando...</p>
+</div>
+<div class="stat-card">
+<h3>🎯 Tokens Vendidos</h3>
+<p id="tokensVendidos">Cargando...</p>
+</div>
+<div class="stat-card">
+<h3>🎨 NFTs Minteados</h3>
+<p id="totalNFTs">Cargando...</p>
+</div>
+</section>
 
-async function conectar() {
-const info = document.getElementById('info');
-info.innerHTML = '🔄 Intentando conectar...';
+<!-- TUS NFTs -->
+<section class="nft-section">
+<h2>🎨 Tus NFTs Mineros</h2>
+<div id="nftGrid" class="nft-grid">
+<p style="text-align:center; color:#A0A0B0;">Conecta tu wallet para ver tus NFTs</p>
+</div>
+</section>
 
-// Verificar si MetaMask existe
-if (typeof window.ethereum === 'undefined') {
-info.innerHTML = '❌ MetaMask NO detectado. <br><a href="https://metamask.io" target="_blank" style="color:orange;">Instalar MetaMask</a>';
-return;
-}
+<!-- MINERÍA -->
+<section class="mining-section">
+<h2>⛏️ Centro de Minería</h2>
+<div class="mining-panel">
+<select id="nftSelect" onchange="seleccionarNFT(this.value)">
+<option value="">Selecciona un NFT para minar</option>
+</select>
 
-info.innerHTML += '<br>✅ MetaMask detectado';
+<div class="nft-info" id="nftInfo" style="display:none;">
+<div><p>📅 Fecha</p><span id="nftFecha">-</span></div>
+<div><p>⭐ Nivel</p><span id="nftNivel">-</span></div>
+<div><p>⚡ Minería/día</p><span id="nftMinado">-</span></div>
+</div>
 
-try {
-// Inicializar Web3
-web3 = new Web3(window.ethereum);
-info.innerHTML += '<br>✅ Web3 inicializado';
+<div class="mining-buttons">
+<button id="claimRewardBtn" class="btn-gold" onclick="claimReward()">🎁 Reclamar Recompensa</button>
+<button id="levelUpBtn" class="btn-upgrade" onclick="levelUp()">⬆️ Subir Nivel</button>
+</div>
 
-// Pedir cuentas
-const accounts = await window.ethereum.request({
-method: 'eth_requestAccounts'
-});
+<div id="miningStatus"></div>
+</div>
+</section>
 
-userAccount = accounts[0];
-info.innerHTML += '<br>✅ Cuenta: ' + userAccount.substring(0, 10) + '...';
+<!-- COMPRA DE TOKENS -->
+<section class="presale-section" id="presale">
+<h2>💰 Compra de Tokens SUPREMACY</h2>
+<div class="presale-panel">
+<p>Compra tokens directamente con BNB</p>
+<div class="buy-form">
+<input type="number" id="bnbAmount" placeholder="Cantidad en BNB" step="0.01" min="0.01" oninput="calcularTokens()">
+<p id="estimatedTokens">Recibirás: 0 SUPREMACY</p>
+<button id="buyTokensConfirm" class="btn-bnb" onclick="buyTokens()">💎 Comprar Ahora</button>
+</div>
+</div>
+</section>
 
-// Ver red
-const chainId = await window.ethereum.request({
-method: 'eth_chainId'
-});
-info.innerHTML += '<br>🔍 Red actual: ' + chainId;
+<!-- FOOTER -->
+<footer>
+<p>© 2024 Token SUPREMACY - BNB Smart Chain</p>
+</footer>
 
-if (chainId === '0x38') {
-info.innerHTML += '<br>✅ Estás en BSC Mainnet';
-
-// Probar balance BNB
-const balance = await web3.eth.getBalance(userAccount);
-const bnbBalance = web3.utils.fromWei(balance, 'ether');
-info.innerHTML += '<br>💰 Balance: ' + parseFloat(bnbBalance).toFixed(4) + ' BNB';
-
-// Probar contrato de token
-const tokenABI = [{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}];
-
-const tokenContract = new web3.eth.Contract(tokenABI, '0x39c9deff5c68d62a8acb3215b18fff8d0baff349');
-
-const symbol = await tokenContract.methods.symbol().call();
-info.innerHTML += '<br>🪙 Token: ' + symbol;
-
-const tokenBalance = await tokenContract.methods.balanceOf(userAccount).call();
-info.innerHTML += '<br>💰 Balance Token: ' + web3.utils.fromWei(tokenBalance, 'ether') + ' ' + symbol;
-
-info.innerHTML += '<br><br>🎉 ¡TODO FUNCIONA CORRECTAMENTE!';
-
-} else if (chainId === '0x61') {
-info.innerHTML += '<br>⚠️ Estás en BSC Testnet. Cambia a Mainnet en MetaMask';
-} else {
-info.innerHTML += '<br>❌ NO estás en BSC. Cambia la red en MetaMask';
-}
-
-} catch (error) {
-info.innerHTML += '<br>❌ ERROR: ' + error.message;
-console.error(error);
-}
-}
-</script>
-
+<script src="js/web3.js"></script>
+<script src="js/contract.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
