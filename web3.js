@@ -1,18 +1,12 @@
-// ============================================
-// CONFIGURACIÓN WEB3 - BNB SMART CHAIN
-// ============================================
-
 let web3;
 let userAccount;
 
-// Direcciones de TUS contratos en BSC
 const CONTRACTS = {
 token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
 nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
 presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
 
-// Configuración BSC Mainnet
 const BSC_MAINNET = {
 chainId: '0x38',
 chainName: 'BNB Smart Chain',
@@ -25,186 +19,108 @@ decimals: 18
 }
 };
 
-// Inicializar al cargar la página
-window.addEventListener('load', async () => {
-console.log('🚀 Página cargada - verificando Web3...');
-
-if (window.ethereum) {
-console.log('✅ MetaMask detectado');
-web3 = new Web3(window.ethereum);
-
-// Escuchar cambios de cuenta
-window.ethereum.on('accountsChanged', (accounts) => {
-if (accounts.length > 0) {
-userAccount = accounts[0];
-updateUIAfterConnect();
-} else {
-userAccount = null;
-resetUI();
-}
-});
-
-// Escuchar cambios de red
-window.ethereum.on('chainChanged', () => {
-window.location.reload();
-});
-
-} else {
-console.log('❌ MetaMask no detectado');
-}
-});
-
-// Función para conectar wallet
 async function connectWallet() {
-console.log('🔌 Intentando conectar wallet...');
+const btn = document.getElementById('connectWallet');
+
+// Si ya está conectado, no hacer nada
+if (userAccount) {
+return;
+}
 
 if (!window.ethereum) {
-alert('⚠️ Por favor instala MetaMask para usar esta aplicación');
+alert('⚠️ Por favor instala MetaMask');
 window.open('https://metamask.io/download.html', '_blank');
-return false;
+return;
 }
 
 try {
+btn.textContent = '🔄 Conectando...';
+btn.disabled = true;
+
 web3 = new Web3(window.ethereum);
 
-// Solicitar cuentas
 const accounts = await window.ethereum.request({
 method: 'eth_requestAccounts'
 });
 
 userAccount = accounts[0];
-console.log('✅ Cuenta conectada:', userAccount);
 
-// Verificar red BSC
+// Verificar red
 const chainId = await window.ethereum.request({
 method: 'eth_chainId'
 });
-console.log('🔍 Red actual:', chainId);
 
 if (chainId !== BSC_MAINNET.chainId) {
-console.log('🔄 Cambiando a BSC...');
 await switchToBSC();
 }
+
+// CAMBIAR BOTÓN A CONECTADO
+btn.textContent = '✅ Conectado';
+btn.style.background = '#00B894';
+btn.style.boxShadow = '0 0 20px rgba(0, 184, 148, 0.4)';
+btn.disabled = false;
+
+// Mostrar dirección
+document.getElementById('walletAddress').style.display = 'inline';
+document.getElementById('walletAddress').textContent =
+userAccount.substring(0, 6) + '...' + userAccount.substring(38);
 
 // Inicializar contratos
 initContracts();
 
-// Actualizar UI
-updateUIAfterConnect();
+// Cargar datos
+cargarDatos();
 
-return true;
+// Escuchar cambios de cuenta
+window.ethereum.on('accountsChanged', (accounts) => {
+if (accounts.length > 0) {
+userAccount = accounts[0];
+document.getElementById('walletAddress').textContent =
+userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+cargarDatos();
+} else {
+desconectar();
+}
+});
+
+window.ethereum.on('chainChanged', () => {
+window.location.reload();
+});
 
 } catch (error) {
-console.error('❌ Error conectando:', error);
+btn.textContent = '🔌 Conectar Wallet';
+btn.style.background = '#6C5CE7';
+btn.style.boxShadow = '0 0 20px rgba(108, 92, 231, 0.3)';
+btn.disabled = false;
 
-if (error.code === 4001) {
-alert('❌ Conexión rechazada por el usuario');
-} else if (error.code === -32002) {
-alert('⚠️ Ya hay una solicitud de conexión pendiente. Revisa MetaMask');
-} else {
-alert('❌ Error al conectar: ' + error.message);
+if (error.code !== 4001) {
+alert('❌ Error: ' + error.message);
 }
-
-return false;
 }
 }
 
-// Cambiar a BSC
+function desconectar() {
+userAccount = null;
+const btn = document.getElementById('connectWallet');
+btn.textContent = '🔌 Conectar Wallet';
+btn.style.background = '#6C5CE7';
+btn.style.boxShadow = '0 0 20px rgba(108, 92, 231, 0.3)';
+document.getElementById('walletAddress').style.display = 'none';
+document.getElementById('tokenBalance').textContent = '0 SUPREMACY';
+}
+
 async function switchToBSC() {
 try {
 await window.ethereum.request({
 method: 'wallet_switchEthereumChain',
 params: [{ chainId: BSC_MAINNET.chainId }],
 });
-console.log('✅ Red cambiada a BSC');
-} catch (switchError) {
-if (switchError.code === 4902) {
-console.log('🔄 Agregando BSC a MetaMask...');
-try {
+} catch (error) {
+if (error.code === 4902) {
 await window.ethereum.request({
 method: 'wallet_addEthereumChain',
 params: [BSC_MAINNET],
 });
-console.log('✅ BSC agregado correctamente');
-} catch (addError) {
-console.error('❌ Error agregando BSC:', addError);
-alert('❌ No se pudo agregar BSC a MetaMask');
 }
 }
 }
-}
-
-// Actualizar UI después de conectar
-function updateUIAfterConnect() {
-console.log('🎨 Actualizando UI...');
-
-// Ocultar botón conectar, mostrar dirección
-document.getElementById('connectWallet').style.display = 'none';
-document.getElementById('walletAddress').style.display = 'inline';
-document.getElementById('walletAddress').textContent =
-userAccount.substring(0, 6) + '...' + userAccount.substring(38);
-
-// Cargar datos
-cargarDatos();
-}
-
-// Resetear UI
-function resetUI() {
-document.getElementById('connectWallet').style.display = 'inline';
-document.getElementById('walletAddress').style.display = 'none';
-document.getElementById('tokenBalance').textContent = '0 SUPREMACY';
-document.getElementById('tokensPorBnb').textContent = 'Cargando...';
-document.getElementById('tokensVendidos').textContent = 'Cargando...';
-document.getElementById('totalNFTs').textContent = 'Cargando...';
-document.getElementById('nftGrid').innerHTML = '<p>Conecta tu wallet para ver tus NFTs</p>';
-}
-
-// Inicializar contratos
-function initContracts() {
-if (!web3 || !userAccount) return;
-
-console.log('📝 Inicializando contratos...');
-
-try {
-tokenContract = new web3.eth.Contract(TOKEN_ABI, CONTRACTS.token);
-nftContract = new web3.eth.Contract(NFT_ABI, CONTRACTS.nft);
-presaleContract = new web3.eth.Contract(PRESALE_ABI, CONTRACTS.presale);
-console.log('✅ Contratos inicializados');
-} catch (error) {
-console.error('❌ Error inicializando contratos:', error);
-}
-}
-
-// Cargar todos los datos
-async function cargarDatos() {
-try {
-// Balance de tokens
-const symbol = await getTokenSymbol();
-const balance = await getTokenBalance(userAccount);
-document.getElementById('tokenBalance').textContent =
-${parseFloat(balance).toFixed(4)} ${symbol};
-
-// Stats de preventa
-const tokensPorBnb = await getTokensPorBnb();
-document.getElementById('tokensPorBnb').textContent =
-${tokensPorBnb} ${symbol};
-
-const tokensVendidos = await getTokensVendidos();
-document.getElementById('tokensVendidos').textContent =
-web3.utils.fromWei(tokensVendidos, 'ether');
-
-// Total NFTs
-const nextId = await getNextTokenId();
-document.getElementById('totalNFTs').textContent =
-(parseInt(nextId) - 1).toString();
-
-// Cargar NFTs del usuario
-await loadUserNFTs();
-
-} catch (error) {
-console.error('❌ Error cargando datos:', error);
-}
-}
-
-// Exponer función globalmente para el onclick del HTML
-window.connectWallet = connectWallet;
