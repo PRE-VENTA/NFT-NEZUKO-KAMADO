@@ -179,7 +179,7 @@ nav { flex-direction: column; gap: 10px; }
 <nav>
 <div class="logo">⚡ TOKEN FANS</div>
 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;">
-<button id="connectWallet" onclick="conectar()">🔌 Conectar Wallet</button>
+<button id="connectWallet">🔌 Conectar Wallet</button>
 <span id="walletAddress" style="display:none;"></span>
 <span id="tokenBalance" style="display:none;">0 FANS</span>
 </div>
@@ -190,8 +190,8 @@ nav { flex-direction: column; gap: 10px; }
 <h1>🐉 Mintea NFTs y Gana FANS</h1>
 <p>NFTs gratuitos con sistema de niveles y minería de tokens FANS en BNB Smart Chain</p>
 <div>
-<button class="btn-gold" onclick="mintNFT()">🎨 Mintear NFT Gratis</button>
-<button class="btn-bnb" onclick="document.getElementById('presale').scrollIntoView({behavior:'smooth'})">💰 Comprar FANS</button>
+<button class="btn-gold" id="btnMint">🎨 Mintear NFT Gratis</button>
+<button class="btn-bnb" id="btnBuyNav">💰 Comprar FANS</button>
 </div>
 </section>
 
@@ -208,15 +208,15 @@ nav { flex-direction: column; gap: 10px; }
 
 <section class="mining-section">
 <h2>⛏️ Minería de FANS</h2>
-<select id="nftSelect" onchange="seleccionarNFT(this.value)"><option value="">Selecciona un NFT</option></select>
+<select id="nftSelect"><option value="">Selecciona un NFT</option></select>
 <div class="nft-info" id="nftInfo" style="display:none;">
 <div><p>📅 Fecha</p><span id="nftFecha">-</span></div>
 <div><p>⭐ Nivel</p><span id="nftNivel">-</span></div>
 <div><p>⚡ FANS/día</p><span id="nftMinado">-</span></div>
 </div>
 <div class="mining-buttons">
-<button class="btn-gold" onclick="claimReward()">🎁 Reclamar FANS</button>
-<button class="btn-upgrade" onclick="levelUp()">⬆️ Subir Nivel</button>
+<button class="btn-gold" id="btnClaim">🎁 Reclamar FANS</button>
+<button class="btn-upgrade" id="btnLevelUp">⬆️ Subir Nivel</button>
 </div>
 <p id="miningStatus" style="text-align:center;margin-top:1rem;"></p>
 </section>
@@ -225,9 +225,9 @@ nav { flex-direction: column; gap: 10px; }
 <h2>💰 Comprar Tokens FANS</h2>
 <p style="text-align:center;color:#A0A0B0;margin-bottom:1rem;">1 BNB = 50,000,000 FANS</p>
 <div class="buy-form">
-<input type="number" id="bnbAmount" placeholder="Cantidad en BNB" step="0.0001" min="0.0001" oninput="calcularTokens()">
+<input type="number" id="bnbAmount" placeholder="Cantidad en BNB" step="0.0001" min="0.0001">
 <p id="estimatedTokens">Recibirás: 0 FANS</p>
-<button class="btn-bnb" onclick="buyTokens()" style="width:100%;max-width:400px;">💎 Comprar Ahora</button>
+<button class="btn-bnb" id="btnBuy">💎 Comprar Ahora</button>
 </div>
 </section>
 
@@ -247,6 +247,23 @@ nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
 presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
 
+// ========== ASIGNAR EVENTOS AL CARGAR ==========
+document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('connectWallet').addEventListener('click', conectar);
+document.getElementById('btnMint').addEventListener('click', mintNFT);
+document.getElementById('btnBuyNav').addEventListener('click', function() {
+document.getElementById('presale').scrollIntoView({behavior: 'smooth'});
+});
+document.getElementById('nftSelect').addEventListener('change', function() {
+seleccionarNFT(this.value);
+});
+document.getElementById('btnClaim').addEventListener('click', claimReward);
+document.getElementById('btnLevelUp').addEventListener('click', levelUp);
+document.getElementById('bnbAmount').addEventListener('input', calcularTokens);
+document.getElementById('btnBuy').addEventListener('click', buyTokens);
+});
+
+// ========== CONEXIÓN ==========
 async function conectar() {
 var btn = document.getElementById('connectWallet');
 
@@ -304,12 +321,12 @@ if (error.code !== 4001) alert('❌ Error: ' + error.message);
 }
 }
 
+// ========== CARGAR DATOS ==========
 async function cargarDatos() {
 if (!userAccount) return;
 try {
 var symbol = await tokenContract.methods.symbol().call();
 
-// Stats
 document.getElementById('tokensPorBnb').textContent = '50,000,000 ' + symbol;
 
 var vendidos = await presaleContract.methods.tokensVendidos().call();
@@ -319,7 +336,6 @@ document.getElementById('tokensVendidos').textContent = Number(vendidosBN).toLoc
 var nextId = await nftContract.methods.siguienteTokenId().call();
 document.getElementById('totalNFTs').textContent = (parseInt(nextId) - 1).toString();
 
-// BALANCE DE FANS DEL USUARIO
 var balance = await tokenContract.methods.balanceOf(userAccount).call();
 var balanceBN = web3.utils.fromWei(balance, 'ether');
 document.getElementById('tokenBalance').style.display = 'inline';
@@ -329,6 +345,7 @@ await cargarNFTs();
 } catch (e) { console.error('Error en cargarDatos:', e); }
 }
 
+// ========== CARGAR NFTs ==========
 async function cargarNFTs() {
 var grid = document.getElementById('nftGrid');
 var select = document.getElementById('nftSelect');
@@ -338,8 +355,6 @@ select.innerHTML = '<option value="">Selecciona un NFT</option>';
 try {
 var nextId = await nftContract.methods.siguienteTokenId().call();
 var maxId = parseInt(nextId) - 1;
-
-console.log('Total de NFTs minteados:', maxId);
 
 if (maxId <= 0) {
 grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">No hay NFTs minteados aún</p>';
@@ -360,12 +375,12 @@ var info = await nftContract.methods.infoNFT(id).call();
 var card = document.createElement('div');
 card.className = 'nft-card';
 card.setAttribute('data-id', id);
-card.onclick = function() {
+card.addEventListener('click', function() {
 var tokenId = this.getAttribute('data-id');
 document.getElementById('nftSelect').value = tokenId;
 seleccionarNFT(tokenId);
 document.querySelector('.mining-section').scrollIntoView({behavior: 'smooth'});
-};
+});
 
 card.innerHTML = '<h3>NFT #' + id + '</h3>' +
 '<p>⭐ Nivel ' + info.nivel + '</p>' +
@@ -376,8 +391,6 @@ var option = document.createElement('option');
 option.value = id;
 option.textContent = 'NFT #' + id + ' - Nivel ' + info.nivel;
 select.appendChild(option);
-
-console.log('NFT #' + id + ' encontrado - Nivel ' + info.nivel);
 }
 } catch (e) { continue; }
 }
@@ -392,6 +405,7 @@ grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">Error a
 }
 }
 
+// ========== FUNCIONES NFT ==========
 async function seleccionarNFT(id) {
 if (!id) {
 document.getElementById('nftInfo').style.display = 'none';
@@ -416,7 +430,7 @@ console.error('Error seleccionando NFT:', e);
 async function mintNFT() {
 if (!userAccount) { alert('⚠️ Conecta tu wallet primero'); return; }
 try {
-var btn = document.querySelector('.btn-gold');
+var btn = document.getElementById('btnMint');
 btn.disabled = true;
 btn.textContent = '🔄 Minteando...';
 
@@ -427,7 +441,7 @@ await cargarDatos();
 } catch (e) {
 alert('❌ Error: ' + e.message);
 } finally {
-var btn = document.querySelector('.btn-gold');
+var btn = document.getElementById('btnMint');
 btn.disabled = false;
 btn.textContent = '🎨 Mintear NFT Gratis';
 }
@@ -459,6 +473,7 @@ document.getElementById('miningStatus').textContent = '❌ Error: ' + e.message;
 }
 }
 
+// ========== COMPRA ==========
 async function calcularTokens() {
 var bnb = document.getElementById('bnbAmount').value;
 if (bnb > 0) {
@@ -473,7 +488,7 @@ var bnb = document.getElementById('bnbAmount').value;
 if (!bnb || bnb <= 0) { alert('⚠️ Ingresa una cantidad válida'); return; }
 
 try {
-var btn = document.querySelector('#presale .btn-bnb');
+var btn = document.getElementById('btnBuy');
 btn.disabled = true;
 btn.textContent = '🔄 Comprando...';
 
@@ -489,7 +504,7 @@ await cargarDatos();
 } catch (e) {
 alert('❌ Error: ' + e.message);
 } finally {
-var btn = document.querySelector('#presale .btn-bnb');
+var btn = document.getElementById('btnBuy');
 btn.disabled = false;
 btn.textContent = '💎 Comprar Ahora';
 }
