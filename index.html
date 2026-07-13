@@ -56,6 +56,15 @@ color: #00CEC9;
 font-family: monospace;
 margin-left: 10px;
 }
+#tokenBalance {
+background: rgba(255,255,255,0.05);
+border: 1px solid rgba(253,203,110,0.3);
+padding: 8px 15px;
+border-radius: 50px;
+font-weight: 700;
+color: #FDCB6E;
+margin-left: 10px;
+}
 .hero {
 text-align: center;
 padding: 80px 20px;
@@ -169,9 +178,10 @@ nav { flex-direction: column; gap: 10px; }
 <header>
 <nav>
 <div class="logo">⚡ TOKEN FANS</div>
-<div style="display:flex;align-items:center;">
+<div style="display:flex;align-items:center;flex-wrap:wrap;gap:5px;">
 <button id="connectWallet" onclick="conectar()">🔌 Conectar Wallet</button>
 <span id="walletAddress" style="display:none;"></span>
+<span id="tokenBalance" style="display:none;">0 FANS</span>
 </div>
 </nav>
 </header>
@@ -270,7 +280,7 @@ nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
 }
 }
 
-var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
+var tokenABI = [{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"}];
 
 var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fechaNacimiento","type":"uint256"},{"internalType":"uint256","name":"ultimoReclamo","type":"uint256"},{"internalType":"uint256","name":"nivel","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"nivel","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}];
 
@@ -299,6 +309,7 @@ if (!userAccount) return;
 try {
 var symbol = await tokenContract.methods.symbol().call();
 
+// Stats
 document.getElementById('tokensPorBnb').textContent = '50,000,000 ' + symbol;
 
 var vendidos = await presaleContract.methods.tokensVendidos().call();
@@ -307,6 +318,12 @@ document.getElementById('tokensVendidos').textContent = Number(vendidosBN).toLoc
 
 var nextId = await nftContract.methods.siguienteTokenId().call();
 document.getElementById('totalNFTs').textContent = (parseInt(nextId) - 1).toString();
+
+// BALANCE DE FANS DEL USUARIO
+var balance = await tokenContract.methods.balanceOf(userAccount).call();
+var balanceBN = web3.utils.fromWei(balance, 'ether');
+document.getElementById('tokenBalance').style.display = 'inline';
+document.getElementById('tokenBalance').textContent = '💰 ' + Number(balanceBN).toLocaleString() + ' FANS';
 
 await cargarNFTs();
 } catch (e) { console.error('Error en cargarDatos:', e); }
@@ -334,8 +351,6 @@ grid.innerHTML = '';
 var nextId = await nftContract.methods.siguienteTokenId().call();
 var maxId = parseInt(nextId) - 1;
 
-console.log('Buscando NFTs del ID 1 al', maxId);
-
 var encontrados = 0;
 
 for (var id = maxId; id >= 1; id--) {
@@ -345,7 +360,6 @@ try {
 var owner = await nftContract.methods.ownerOf(id).call();
 if (owner.toLowerCase() === userAccount.toLowerCase()) {
 encontrados++;
-console.log('NFT #' + id + ' encontrado');
 
 var info = await nftContract.methods.infoNFT(id).call();
 
@@ -371,8 +385,6 @@ select.appendChild(option);
 }
 } catch (e) { continue; }
 }
-
-console.log('Encontrados:', encontrados);
 
 if (encontrados === 0) {
 grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">No tienes NFTs aún. ¡Mintea uno gratis!</p>';
