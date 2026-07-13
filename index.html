@@ -332,34 +332,28 @@ await cargarNFTs();
 async function cargarNFTs() {
 var grid = document.getElementById('nftGrid');
 var select = document.getElementById('nftSelect');
-grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">🔄 Buscando NFTs...</p>';
+grid.innerHTML = '';
 select.innerHTML = '<option value="">Selecciona un NFT</option>';
 
 try {
-var balance = await nftContract.methods.balanceOf(userAccount).call();
-var totalNFTs = parseInt(balance);
-
-console.log('Balance de NFTs:', totalNFTs);
-
-if (totalNFTs === 0) {
-grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">No tienes NFTs aún. ¡Mintea uno gratis!</p>';
-return;
-}
-
-grid.innerHTML = '';
-
 var nextId = await nftContract.methods.siguienteTokenId().call();
 var maxId = parseInt(nextId) - 1;
 
-var encontrados = 0;
+console.log('Total de NFTs minteados:', maxId);
 
-for (var id = maxId; id >= 1; id--) {
-if (encontrados >= totalNFTs) break;
+if (maxId <= 0) {
+grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">No hay NFTs minteados aún</p>';
+return;
+}
 
+var encontrados = false;
+
+for (var id = 1; id <= maxId; id++) {
 try {
 var owner = await nftContract.methods.ownerOf(id).call();
+
 if (owner.toLowerCase() === userAccount.toLowerCase()) {
-encontrados++;
+encontrados = true;
 
 var info = await nftContract.methods.infoNFT(id).call();
 
@@ -382,11 +376,13 @@ var option = document.createElement('option');
 option.value = id;
 option.textContent = 'NFT #' + id + ' - Nivel ' + info.nivel;
 select.appendChild(option);
+
+console.log('NFT #' + id + ' encontrado - Nivel ' + info.nivel);
 }
 } catch (e) { continue; }
 }
 
-if (encontrados === 0) {
+if (!encontrados) {
 grid.innerHTML = '<p style="text-align:center;color:#A0A0B0;width:100%;">No tienes NFTs aún. ¡Mintea uno gratis!</p>';
 }
 
