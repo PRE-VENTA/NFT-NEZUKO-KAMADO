@@ -14,7 +14,7 @@
 <nav>
 <div class="logo">⚡ TOKEN SUPREMACY</div>
 <div class="wallet-info">
-<button id="connectWallet" class="btn-connect" onclick="connectWallet()">
+<button id="connectWallet" class="btn-connect" onclick="conectar()">
 🔌 Conectar Wallet
 </button>
 <span id="walletAddress" style="display:none;"></span>
@@ -98,8 +98,279 @@
 <p>© 2024 Token SUPREMACY - BNB Smart Chain</p>
 </footer>
 
-<script src="js/web3.js"></script>
+<!-- TODO EL CÓDIGO EN UN SOLO ARCHIVO -->
+<script>
+// ========== VARIABLES GLOBALES ==========
+let web3;
+let userAccount;
+let tokenContract;
+let nftContract;
+let presaleContract;
+let currentNFTSelected = null;
+
+const CONTRACTS = {
+token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
+nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
+presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
+};
+
+// ========== FUNCIÓN PRINCIPAL DE CONEXIÓN ==========
+async function conectar() {
+const btn = document.getElementById('connectWallet');
+
+if (userAccount) return;
+
+if (!window.ethereum) {
+alert('⚠️ Instala MetaMask');
+return;
+}
+
+try {
+btn.textContent = '🔄 Conectando...';
+btn.disabled = true;
+
+web3 = new Web3(window.ethereum);
+const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+userAccount = accounts[0];
+
+// Verificar red BSC
+const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+if (chainId !== '0x38') {
+try {
+await window.ethereum.request({
+method: 'wallet_switchEthereumChain',
+params: [{ chainId: '0x38' }],
+});
+} catch (e) {
+await window.ethereum.request({
+method: 'wallet_addEthereumChain',
+params: [{
+chainId: '0x38',
+chainName: 'BNB Smart Chain',
+rpcUrls: ['https://bsc-dataseed.binance.org/'],
+blockExplorerUrls: ['https://bscscan.com/'],
+nativeCurrency: { name: 'BNB', symbol: 'BNB', decimals: 18 }
+}],
+});
+}
+}
+
+// BOTÓN CONECTADO
+btn.textContent = '✅ Conectado';
+btn.style.background = '#00B894';
+btn.disabled = false;
+
+// Mostrar dirección
+document.getElementById('walletAddress').style.display = 'inline';
+document.getElementById('walletAddress').textContent =
+userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+
+// Inicializar contratos
+initContracts();
+
+// Cargar datos
+await cargarDatos();
+
+// Escuchar cambios
+window.ethereum.on('accountsChanged', (cuentas) => {
+if (cuentas.length > 0) {
+userAccount = cuentas[0];
+document.getElementById('walletAddress').textContent =
+userAccount.substring(0, 6) + '...' + userAccount.substring(38);
+cargarDatos();
+}
+});
+
+} catch (error) {
+btn.textContent = '🔌 Conectar Wallet';
+btn.style.background = '#6C5CE7';
+btn.disabled = false;
+if (error.code !== 4001) {
+alert('❌ Error: ' + error.message);
+}
+}
+}
+
+function initContracts() {
+tokenContract = new web3.eth.Contract(TOKEN_ABI, CONTRACTS.token);
+nftContract = new web3.eth.Contract(NFT_ABI, CONTRACTS.nft);
+presaleContract = new web3.eth.Contract(PRESALE_ABI, CONTRACTS.presale);
+}
+
+async function cargarDatos() {
+try {
+const symbol = await tokenContract.methods.symbol().call();
+const balance = await tokenContract.methods.balanceOf(userAccount).call();
+document.getElementById('tokenBalance').textContent =
+parseFloat(web3.utils.fromWei(balance, 'ether')).toFixed(4) + ' ' + symbol;
+
+const tokensPorBnb = await presaleContract.methods.tokensPorBnb().call();
+document.getElementById('tokensPorBnb').textContent = tokensPorBnb + ' ' + symbol;
+
+const tokensVendidos = await presaleContract.methods.tokensVendidos().call();
+document.getElementById('tokensVendidos').textContent = web3.utils.fromWei(tokensVendidos, 'ether');
+
+const nextId = await nftContract.methods.siguienteTokenId().call();
+document.getElementById('totalNFTs').textContent = (parseInt(nextId) - 1).toString();
+
+await cargarNFTs();
+} catch (error) {
+console.error('Error cargando datos:', error);
+}
+}
+
+async function cargarNFTs() {
+const nftGrid = document.getElementById('nftGrid');
+const nftSelect = document.getElementById('nftSelect');
+
+nftGrid.innerHTML = '';
+nftSelect.innerHTML = '<option value="">Selecciona un NFT</option>';
+
+try {
+const total = await nftContract.methods.siguienteTokenId().call();
+
+for (let tokenId = 1; tokenId < parseInt(total); tokenId++) {
+try {
+const owner = await nftContract.methods.ownerOf(tokenId).call();
+if (owner.toLowerCase() === userAccount.toLowerCase()) {
+const info = await nftContract.methods.infoNFT(tokenId).call();
+
+const card = document.createElement('div');
+card.className = 'nft-card';
+card.innerHTML = &lt;h3&gt;NFT #${tokenId}</h3>
+<p>⭐ Nivel: ${info.nivel}&lt;/p&gt; &lt;p&gt;📅 ${new Date(info.fechaNacimiento * 1000).toLocaleDateString()}</p>
+`;
+nftGrid.appendChild(card);
+
+const option = document.createElement('option');
+option.value = tokenId;
+option.textContent = NFT #${tokenId} - Nivel ${info.nivel}`;
+nftSelect.appendChild(option);
+}
+} catch (e) {
+continue;
+}
+}
+} catch (error) {
+console.error('Error cargando NFTs:', error);
+}
+}
+
+async function seleccionarNFT(tokenId) {
+if (!tokenId) {
+document.getElementById('nftInfo').style.display = 'none';
+return;
+}
+currentNFTSelected = tokenId;
+const info = await nftContract.methods.infoNFT(tokenId).call();
+const minado = await nftContract.methods.obtenerMinadoPorNivel(info.nivel).call();
+
+document.getElementById('nftInfo').style.display = 'grid';
+document.getElementById('nftFecha').textContent = new Date(info.fechaNacimiento * 1000).toLocaleDateString();
+document.getElementById('nftNivel').textContent = info.nivel;
+document.getElementById('nftMinado').textContent = web3.utils.fromWei(minado, 'ether');
+}
+
+async function mintNFT() {
+if (!userAccount) return alert('⚠️ Conecta tu wallet primero');
+try {
+const btn = document.getElementById('mintNFTBtn');
+btn.disabled = true;
+btn.textContent = 'Minteando...';
+await nftContract.methods.mintearNFTGratis().send({ from: userAccount });
+alert('✅ ¡NFT minteado!');
+await cargarDatos();
+} catch (error) {
+alert('❌ Error: ' + error.message);
+} finally {
+const btn = document.getElementById('mintNFTBtn');
+btn.disabled = false;
+btn.textContent = '🎨 Mintear NFT Gratis';
+}
+}
+
+async function claimReward() {
+if (!currentNFTSelected) return alert('⚠️ Selecciona un NFT');
+try {
+const btn = document.getElementById('claimRewardBtn');
+btn.disabled = true;
+btn.textContent = 'Reclamando...';
+await nftContract.methods.reclamarRecompensa(currentNFTSelected).send({ from: userAccount });
+alert('✅ ¡Recompensa reclamada!');
+await cargarDatos();
+} catch (error) {
+alert('❌ Error: ' + error.message);
+} finally {
+const btn = document.getElementById('claimRewardBtn');
+btn.disabled = false;
+btn.textContent = '🎁 Reclamar Recompensa';
+}
+}
+
+async function levelUp() {
+if (!currentNFTSelected) return alert('⚠️ Selecciona un NFT');
+try {
+const btn = document.getElementById('levelUpBtn');
+btn.disabled = true;
+btn.textContent = 'Subiendo...';
+await nftContract.methods.subirNivel(currentNFTSelected).send({ from: userAccount });
+alert('✅ ¡Nivel subido!');
+await cargarDatos();
+} catch (error) {
+alert('❌ Error: ' + error.message);
+} finally {
+const btn = document.getElementById('levelUpBtn');
+btn.disabled = false;
+btn.textContent = '⬆️ Subir Nivel';
+}
+}
+
+function irAPreventa() {
+document.getElementById('presale').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function calcularTokens() {
+const bnb = document.getElementById('bnbAmount').value;
+if (bnb > 0 && tokenContract) {
+try {
+const rate = await presaleContract.methods.tokensPorBnb().call();
+document.getElementById('estimatedTokens').textContent =
+'Recibirás: ' + (bnb * rate) + ' SUPREMACY';
+} catch (e) {}
+}
+}
+
+async function buyTokens() {
+if (!userAccount) return alert('⚠️ Conecta tu wallet primero');
+const bnb = document.getElementById('bnbAmount').value;
+if (!bnb || bnb <= 0) return alert('⚠️ Ingresa una cantidad');
+
+try {
+const btn = document.getElementById('buyTokensConfirm');
+btn.disabled = true;
+btn.textContent = 'Comprando...';
+
+const wei = web3.utils.toWei(bnb, 'ether');
+await presaleContract.methods.buyTokens().send({
+from: userAccount,
+value: wei
+});
+
+alert('✅ ¡Tokens comprados!');
+document.getElementById('bnbAmount').value = '';
+document.getElementById('estimatedTokens').textContent = 'Recibirás: 0 SUPREMACY';
+await cargarDatos();
+} catch (error) {
+alert('❌ Error: ' + error.message);
+} finally {
+const btn = document.getElementById('buyTokensConfirm');
+btn.disabled = false;
+btn.textContent = '💎 Comprar Ahora';
+}
+}
+</script>
+
+<!-- ABIs (al final para no estorbar) -->
 <script src="js/contract.js"></script>
-<script src="js/app.js"></script>
 </body>
 </html>
