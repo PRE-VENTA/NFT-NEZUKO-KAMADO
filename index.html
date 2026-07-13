@@ -167,7 +167,6 @@ nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
 presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
 
-// IMÁGENES DIRECTAS POR NIVEL
 var IMAGENES_NIVEL = {
 0: 'https://gateway.pinata.cloud/ipfs/bafybeie4wc62hvw4c2vpxsck32v7ksayrpoxqc3fichzonhpzbtta4vjrm',
 1: 'https://gateway.pinata.cloud/ipfs/bafybeiftffhym7euaqngyarxjiehiyg32mn5ccx7r7vspvhwplbsbk5kjq',
@@ -321,15 +320,26 @@ document.getElementById('nftFecha').textContent = new Date(Number(info.fechaNaci
 document.getElementById('nftNivel').textContent = info.nivel;
 document.getElementById('nftMinado').textContent = Number(web3.utils.fromWei(minado, 'ether')).toFixed(2) + ' FANS';
 
-// IMAGEN DIRECTA POR NIVEL
 var imgContainer = document.getElementById('nftImagenContainer');
-var nivel = parseInt(info.nivel);
+var nivel = Number(info.nivel);
 var imageUrl = IMAGENES_NIVEL[nivel];
 
 if (imageUrl) {
-imgContainer.innerHTML = '<img src="' + imageUrl + '" style="max-width:250px;border-radius:15px;display:block;margin:0 auto;"><p style="color:#FDCB6E;margin-top:8px;">Nivel ' + nivel + '</p>';
+imgContainer.innerHTML = '';
+var img = document.createElement('img');
+img.src = imageUrl;
+img.style.maxWidth = '250px';
+img.style.borderRadius = '15px';
+img.style.display = 'block';
+img.style.margin = '0 auto';
+imgContainer.appendChild(img);
+var caption = document.createElement('p');
+caption.style.color = '#FDCB6E';
+caption.style.marginTop = '8px';
+caption.textContent = 'Nivel ' + nivel;
+imgContainer.appendChild(caption);
 } else {
-imgContainer.innerHTML = '<p style="color:#A0A0B0;">Imagen no disponible para nivel ' + nivel + '</p>';
+imgContainer.innerHTML = '<p style="color:#A0A0B0;">Imagen no disponible</p>';
 }
 } catch (e) { console.error('Error:', e); }
 mostrarListaNFTs();
