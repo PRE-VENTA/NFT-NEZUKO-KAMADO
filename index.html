@@ -314,14 +314,15 @@ currentNFTSelected = id;
 document.getElementById('nftSeleccionadoInfo').textContent = 'NFT #' + id + ' seleccionado';
 try {
 var info = await nftContract.methods.infoNFT(id).call();
-var minado = await nftContract.methods.obtenerMinadoPorNivel(info.nivel).call();
+var nivel = Number(info.nivel);
+var minado = await nftContract.methods.obtenerMinadoPorNivel(nivel).call();
+
 document.getElementById('nftInfo').style.display = 'grid';
 document.getElementById('nftFecha').textContent = new Date(Number(info.fechaNacimiento) * 1000).toLocaleDateString();
-document.getElementById('nftNivel').textContent = info.nivel;
+document.getElementById('nftNivel').textContent = nivel;
 document.getElementById('nftMinado').textContent = Number(web3.utils.fromWei(minado, 'ether')).toFixed(2) + ' FANS';
 
 var imgContainer = document.getElementById('nftImagenContainer');
-var nivel = Number(info.nivel);
 var imageUrl = IMAGENES_NIVEL[nivel];
 
 if (imageUrl) {
@@ -341,7 +342,10 @@ imgContainer.appendChild(caption);
 } else {
 imgContainer.innerHTML = '<p style="color:#A0A0B0;">Imagen no disponible</p>';
 }
-} catch (e) { console.error('Error:', e); }
+} catch (e) {
+console.error('Error:', e);
+alert('Error al leer NFT: ' + e.message);
+}
 mostrarListaNFTs();
 document.querySelector('.mining-section').scrollIntoView({behavior: 'smooth'});
 }
