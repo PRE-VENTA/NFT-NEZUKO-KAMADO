@@ -378,6 +378,9 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 <a href="https://www.facebook.com/share/1Dy1uds9ey/" target="_blank" class="social-icon">
 <img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png" alt="Facebook">
 </a>
+<a href="https://www.instagram.com/supremacyfans?igsh=eGp6dm9pMnc0aTlx&utm_source=ig_contact_invite" target="_blank" class="social-icon">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram">
+</a>
 </div>
 </section>
 
@@ -426,6 +429,21 @@ presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
 
 var TOTAL_PREVENTA = 200000000000;
+
+// FANS POR DÍA SEGÚN NIVEL
+var FANS_POR_NIVEL = {
+0: 100,
+1: 1000,
+2: 2000,
+3: 4000,
+4: 8000,
+5: 16000,
+6: 32000,
+7: 64000,
+8: 128000,
+9: 256000,
+10: 512000
+};
 
 var IMAGENES_CARRUSEL = [
 'https://gateway.pinata.cloud/ipfs/bafybeie4wc62hvw4c2vpxsck32v7ksayrpoxqc3fichzonhpzbtta4vjrm',
@@ -508,7 +526,6 @@ var nftABI = [
 {"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},
 {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},
 {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":["address"],"stateMutability":"view","type":"function"},
-{"inputs":[{"internalType":"uint256","name":"nivel","type":"uint256"}],"name":"obtenerMinadoPorNivel","outputs":["uint256"],"stateMutability":"pure","type":"function"},
 {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},
 {"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},
 {"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":["uint256"],"stateMutability":"view","type":"function"}
@@ -578,13 +595,9 @@ document.getElementById('nftInfo').style.display = 'grid';
 document.getElementById('nftFecha').textContent = new Date(Number(info.fn || info[0]) * 1000).toLocaleDateString();
 document.getElementById('nftNivel').textContent = nivel;
 
-// Obtener FANS por día según nivel
-try {
-var minado = await nftContract.methods.obtenerMinadoPorNivel(nivel).call();
-document.getElementById('nftMinado').textContent = Number(web3.utils.fromWei(minado, 'ether')).toFixed(2) + ' FANS';
-} catch (e) {
-document.getElementById('nftMinado').textContent = '0.00 FANS';
-}
+// FANS POR DÍA SEGÚN TABLA
+var fansDiarios = FANS_POR_NIVEL[nivel] || 100;
+document.getElementById('nftMinado').textContent = fansDiarios.toLocaleString() + ' FANS';
 
 if (nivel < IMAGENES_CARRUSEL.length) { carruselIndex = nivel; actualizarCarrusel(); }
 } catch (e) { console.error('Error:', e); }
