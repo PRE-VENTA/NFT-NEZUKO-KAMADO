@@ -422,8 +422,28 @@ document.getElementById('btnBuy').addEventListener('click', buyTokens);
 
 function actualizarStatLista() { document.getElementById('totalNFTs').textContent = listaNFTs.length; }
 function abrirModalMovil() { if (userAccount) return; document.getElementById('movilModal').style.display = 'flex'; }
-function abrirMetaMask() { window.location.href = 'https://metamask.app.link/dapp/' + window.location.host + window.location.pathname; }
-function abrirTrustWallet() { window.location.href = 'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(window.location.href); }
+
+function abrirMetaMask() {
+// Deep link para MetaMask - abre directamente la app
+var url = window.location.href;
+var metamaskUrl = 'https://metamask.app.link/dapp/' + window.location.host + window.location.pathname;
+window.open(metamaskUrl, '_blank');
+// Fallback si no abre
+setTimeout(function() {
+window.location.href = 'https://metamask.app.link/dapp/' + window.location.host + window.location.pathname;
+}, 500);
+}
+
+function abrirTrustWallet() {
+// Deep link para Trust Wallet - abre directamente la app
+var url = window.location.href;
+var trustUrl = 'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(window.location.href);
+window.open(trustUrl, '_blank');
+// Fallback si no abre
+setTimeout(function() {
+window.location.href = 'https://link.trustwallet.com/open_url?coin_id=20000714&url=' + encodeURIComponent(window.location.href);
+}, 500);
+}
 
 async function conectarPC() { if (userAccount) return; if (typeof window.ethereum === 'undefined') { alert('Instala MetaMask'); return; } await iniciarConexion(window.ethereum); }
 
