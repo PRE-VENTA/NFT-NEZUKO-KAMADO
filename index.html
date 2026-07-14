@@ -84,7 +84,6 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 </nav>
 </header>
 
-<!-- Modal para elegir wallet en móvil -->
 <div id="movilModal" class="modal">
 <div class="modal-content">
 <h3>📱 Conectar desde Móvil</h3>
@@ -168,6 +167,9 @@ token: '0x39c9deff5c68d62a8acb3215b18fff8d0baff349',
 nft: '0x3cF732Dd7a3C809165A53bAD071cAD2B4Bb899D0',
 presale: '0x4EF73c3a789AdB4eC53c0f7715A50164A46b0408'
 };
+
+// Total de tokens en preventa: 200 mil millones
+var TOTAL_PREVENTA = 200000000000;
 
 var IMAGENES_CARRUSEL = [
 'https://gateway.pinata.cloud/ipfs/bafybeie4wc62hvw4c2vpxsck32v7ksayrpoxqc3fichzonhpzbtta4vjrm',
@@ -260,7 +262,7 @@ catch (e) { await provider.request({ method: 'wallet_addEthereumChain', params: 
 }
 var tokenABI = [{"inputs":[],"name":"symbol","outputs":["string"],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":["uint8"],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"a","type":"address"}],"name":"balanceOf","outputs":["uint256"],"stateMutability":"view","type":"function"}];
 var nftABI = [{"inputs":[],"name":"siguienteTokenId","outputs":["uint256"],"stateMutability":"view","type":"function"},{"inputs":[],"name":"mintearNFTGratis","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"infoNFT","outputs":[{"internalType":"uint256","name":"fn","type":"uint256"},{"internalType":"uint256","name":"ur","type":"uint256"},{"internalType":"uint256","name":"nv","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"ownerOf","outputs":["address"],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"reclamarRecompensa","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"id","type":"uint256"}],"name":"subirNivel","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"o","type":"address"}],"name":"balanceOf","outputs":["uint256"],"stateMutability":"view","type":"function"}];
-var presaleABI = [{"inputs":[],"name":"tokensVendidos","outputs":["uint256"],"stateMutability":"view","type":"function"},{"inputs":[],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"}];
+var presaleABI = [{"inputs":[],"name":"buyTokens","outputs":[],"stateMutability":"payable","type":"function"}];
 tokenContract = new web3.eth.Contract(tokenABI, CONTRACTS.token);
 nftContract = new web3.eth.Contract(nftABI, CONTRACTS.nft);
 presaleContract = new web3.eth.Contract(presaleABI, CONTRACTS.presale);
@@ -276,9 +278,17 @@ await cargarDatos(); mostrarListaNFTs();
 
 async function cargarDatos() {
 if (!userAccount) return;
+// Balance FANS del usuario
 try { var b = await tokenContract.methods.balanceOf(userAccount).call(); var s = await tokenContract.methods.symbol().call(); document.getElementById('tokenBalance').style.display = 'inline'; document.getElementById('tokenBalance').textContent = '💰 ' + Number(b / Math.pow(10, tokenDecimals)).toLocaleString() + ' ' + s; } catch (e) {}
-try { var n = await nftContract.methods.siguienteTokenId().call(); document.getElementById('totalNFTs').textContent = n.toString(); } catch (e) {}
-try { var v = await presaleContract.methods.tokensVendidos().call(); document.getElementById('tokensVendidos').textContent = Number(web3.utils.fromWei(v, 'ether')).toLocaleString(); } catch (e) {}
+// NFTs minteados
+try { var n = await nftContract.methods.siguienteTokenId().call(); document.getElementById('totalNFTs').textContent = n.toString(); } catch (e) { document.getElementById('totalNFTs').textContent = '---'; }
+// FANS vendidos = TOTAL_PREVENTA - balance del contrato de preventa
+try {
+var balancePreventa = await tokenContract.methods.balanceOf(CONTRACTS.presale).call();
+var balanceReal = Number(balancePreventa) / Math.pow(10, tokenDecimals);
+var vendidos = TOTAL_PREVENTA - balanceReal;
+document.getElementById('tokensVendidos').textContent = Math.floor(vendidos).toLocaleString();
+} catch (e) { document.getElementById('tokensVendidos').textContent = '---'; }
 }
 
 async function agregarNFT() {
