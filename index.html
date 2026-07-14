@@ -54,15 +54,11 @@ border-radius: 50px; font-weight: 700; color: #ffd700; margin-left: 10px;
 box-shadow: 0 0 10px rgba(212,175,55,0.2);
 }
 
-/* BARRA DE ANUNCIOS DESLIZANTE */
+/* BARRA DE ANUNCIOS */
 .announcement-bar {
 background: linear-gradient(90deg, #0d5e2e 0%, #00a651 25%, #00c853 50%, #00a651 75%, #0d5e2e 100%);
-color: white;
-font-weight: 700;
-font-size: 1.1rem;
-padding: 12px 0;
-overflow: hidden;
-white-space: nowrap;
+color: white; font-weight: 700; font-size: 1.1rem; padding: 12px 0;
+overflow: hidden; white-space: nowrap;
 border-bottom: 2px solid #00ff88;
 box-shadow: 0 0 20px rgba(0,255,100,0.4);
 }
@@ -71,15 +67,9 @@ display: inline-block;
 animation: scrollText 25s linear infinite;
 }
 .announcement-item {
-display: inline-block;
-padding: 0 40px;
-letter-spacing: 0.5px;
+display: inline-block; padding: 0 40px; letter-spacing: 0.5px;
 }
-.announcement-separator {
-color: #00ff88;
-font-size: 1.3rem;
-margin: 0 5px;
-}
+.announcement-separator { color: #00ff88; font-size: 1.3rem; margin: 0 5px; }
 @keyframes scrollText {
 0% { transform: translateX(0); }
 100% { transform: translateX(-50%); }
@@ -92,8 +82,8 @@ background: linear-gradient(180deg, #ffffff 0%, #ffd700 50%, #b8860b 100%);
 -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 text-shadow: 0 0 30px rgba(255,215,0,0.5);
 }
-.hero p { color: #a0a0c0; font-size: 1.2rem; max-width: 500px; margin: 0 auto 2rem; }
-.btn-gold, .btn-bnb, .btn-upgrade, .btn-red {
+.hero p { color: #a0a0c0; font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem; }
+.btn-gold, .btn-bnb, .btn-upgrade, .btn-red, .btn-next-collection {
 padding: 15px 30px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer;
 font-size: 1rem; margin: 5px; transition: all 0.3s ease;
 text-transform: uppercase; letter-spacing: 1px;
@@ -118,7 +108,13 @@ background: linear-gradient(180deg, #ff6b6b 0%, #cc4444 100%);
 color: white; border: 2px solid #ffaaaa;
 box-shadow: 0 0 25px rgba(255,107,107,0.4);
 }
-.btn-gold:hover, .btn-bnb:hover, .btn-upgrade:hover, .btn-red:hover {
+.btn-next-collection {
+background: linear-gradient(180deg, #6C5CE7 0%, #5A4BD1 100%);
+color: white; border: 2px solid #a29bfe;
+box-shadow: 0 0 25px rgba(108,92,231,0.5), inset 0 0 10px rgba(255,255,255,0.2);
+display: inline-block; text-decoration: none;
+}
+.btn-gold:hover, .btn-bnb:hover, .btn-upgrade:hover, .btn-red:hover, .btn-next-collection:hover {
 transform: translateY(-3px);
 filter: brightness(1.2);
 }
@@ -134,11 +130,6 @@ transition: all 0.3s ease;
 transform: translateY(-5px);
 border-color: #ffd700;
 box-shadow: 0 0 50px rgba(255,215,0,0.3), inset 0 0 30px rgba(255,215,0,0.1);
-}
-.stat-card::before {
-content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, transparent 70%);
-pointer-events: none;
 }
 .stat-card h3 { color: #a0a0c0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; }
 .stat-card p { font-size: 2.2rem; font-weight: 900; color: #ffd700; text-shadow: 0 0 15px rgba(212,175,55,0.5); }
@@ -185,25 +176,38 @@ font-size: 1rem; width: 100%; margin-bottom: 1rem;
 box-shadow: 0 0 15px rgba(212,175,55,0.2);
 }
 #estimatedTokens { color: #ffd700; font-weight: 600; margin-bottom: 1rem; font-size: 1.2rem; }
-footer { text-align: center; padding: 2rem; background: #0a0a14; border-top: 2px solid #d4af37; color: #a0a0c0; }
-button:disabled { opacity: 0.6; cursor: not-allowed; }
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
-.modal-content {
-background: linear-gradient(135deg, #2a2a3e, #1a1a2e); border: 2px solid #d4af37;
-padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%;
-box-shadow: 0 0 40px rgba(212,175,55,0.3);
+
+/* REDES SOCIALES */
+.social-links {
+display: flex; justify-content: center; gap: 20px; margin-top: 2rem;
 }
-.modal-content h3 { color: #ffd700; margin-bottom: 15px; }
-.modal-content p { color: #a0a0c0; margin-bottom: 15px; }
-.app-btn { padding: 12px 20px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: white; width: 100%; margin: 5px 0; }
-.app-btn.metamask {
-background: linear-gradient(135deg, #4a4a6a 0%, #2a2a4a 100%);
-border: 1px solid #6a6a8a;
+.social-icon {
+width: 50px; height: 50px; border-radius: 50%;
+display: flex; align-items: center; justify-content: center;
+transition: all 0.3s ease; cursor: pointer;
 }
-.app-btn.trust {
-background: linear-gradient(135deg, #1a5a4a 0%, #0a3a2a 100%);
-border: 1px solid #3a8a6a;
+.social-icon:hover { transform: scale(1.1); }
+.social-icon img { width: 50px; height: 50px; border-radius: 50%; }
+
+/* FOOTER INFORMATIVO */
+.info-footer {
+background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,20,0.95));
+border-top: 2px solid #d4af37; padding: 3rem 2rem; margin-top: 3rem;
+color: #a0a0c0; line-height: 1.8;
 }
+.info-footer h3 { color: #ffd700; font-size: 1.5rem; margin-bottom: 1rem; text-align: center; }
+.info-footer-grid {
+display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 2rem; max-width: 1000px; margin: 0 auto;
+}
+.info-footer-item {
+background: rgba(255,255,255,0.02); border: 1px solid #d4af37;
+border-radius: 15px; padding: 1.5rem;
+}
+.info-footer-item h4 { color: #ffd700; margin-bottom: 0.5rem; }
+.info-footer-item p { font-size: 0.9rem; }
+.info-footer-bottom { text-align: center; margin-top: 2rem; color: #ffd700; }
+
 .carrusel-section {
 background: linear-gradient(135deg, rgba(30,30,50,0.8), rgba(20,20,40,0.8));
 border: 2px solid #d4af37; border-radius: 25px; padding: 2rem;
@@ -223,6 +227,9 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 .btn-prev { background: linear-gradient(135deg, #4a4a6a, #2a2a4a); color: white; border: 1px solid #6a6a8a; }
 .btn-next { background: linear-gradient(135deg, #1a5a4a, #0a3a2a); color: white; border: 1px solid #3a8a6a; }
 .btn-auto { background: linear-gradient(180deg, #ffd700, #b8860b); color: #0a0a14; border: 1px solid #ffec8b; }
+
+.next-collection-container { text-align: center; margin: 1rem 0 2rem; }
+
 @media (max-width: 600px) { .hero h1 { font-size: 2rem; } .nft-info { grid-template-columns: 1fr; } .mining-buttons { flex-direction: column; } .nft-item { flex-direction: column; text-align: center; } .announcement-bar { font-size: 0.8rem; } }
 </style>
 </head>
@@ -253,7 +260,6 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 <span class="announcement-separator">│</span>
 <span class="announcement-item">🔥 ¡NO TE QUEDES FUERA! MINTA TUS NFTs GRATIS 🔥</span>
 <span class="announcement-separator">│</span>
-<!-- Repetidos para loop continuo -->
 <span class="announcement-item">🚀 LANZAMIENTO OFICIAL DEL TOKEN FANS - 20/12/2026 🚀</span>
 <span class="announcement-separator">│</span>
 <span class="announcement-item">💰 PRECIO ACTUAL PREVENTA: 1 BNB = 50,000,000 FANS</span>
@@ -276,8 +282,8 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 </div>
 
 <section class="hero">
-<h1>🐉 Mintea NFTs y Gana FANS</h1>
-<p>Agrega tus NFTs por ID y gestiona tu minería de tokens FANS</p>
+<h1>GANA FANS CON TU PERSONAJE FAVORITO</h1>
+<p>Agrega tus NFTs por ID, mintea gratis y gestiona tu minería de tokens FANS</p>
 <div>
 <button class="btn-gold" id="btnMint">🎨 Mintear NFT Gratis</button>
 <button class="btn-bnb" id="btnBuyNav">💰 Comprar FANS</button>
@@ -294,6 +300,9 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 <button class="btn-prev" onclick="carruselAnterior()">◀ Anterior</button>
 <button class="btn-auto" id="btnAuto" onclick="toggleAuto()">⏸️ Pausar</button>
 <button class="btn-next" onclick="carruselSiguiente()">Siguiente ▶</button>
+</div>
+<div class="next-collection-container">
+<a href="https://pre-venta.github.io/NFT-KANAO-TSUYURY/" target="_blank" class="btn-next-collection">➡️ SIGUIENTE COLECCIÓN ➡️</a>
 </div>
 </section>
 
@@ -335,9 +344,50 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 <p id="estimatedTokens">Recibirás: 0 FANS</p>
 <button class="btn-bnb" id="btnBuy">💎 Comprar Ahora</button>
 </div>
+<!-- REDES SOCIALES -->
+<div class="social-links">
+<a href="https://telegram.me/SUPREMACIAFANS" target="_blank" class="social-icon">
+<img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" alt="Telegram">
+</a>
+<a href="https://www.facebook.com/share/1Dy1uds9ey/" target="_blank" class="social-icon">
+<img src="https://cdn-icons-png.flaticon.com/512/5968/5968764.png" alt="Facebook">
+</a>
+</div>
 </section>
 
-<footer><p>© 2026 Token FANS - BNB Smart Chain</p></footer>
+<!-- FOOTER INFORMATIVO -->
+<footer class="info-footer">
+<h3>📖 SOBRE TU NFT MINERO</h3>
+<div class="info-footer-grid">
+<div class="info-footer-item">
+<h4>⛏️ Acumula Recompensas</h4>
+<p>Tus NFTs generan tokens FANS pasivamente. Mientras más nivel tengan, más FANS producen por día. ¡Reclama tus recompensas cuando quieras!</p>
+</div>
+<div class="info-footer-item">
+<h4>⭐ Sube de Nivel</h4>
+<p>Usa tus FANS para subir el nivel de tus NFTs. Cada nivel aumenta la tasa de minería. ¡Llega hasta nivel 10 y maximiza tus ganancias!</p>
+</div>
+<div class="info-footer-item">
+<h4>🔄 Reclamar sin Límite</h4>
+<p>No hay tiempo mínimo de espera. Puedes reclamar tus FANS acumulados en cualquier momento. Las recompensas nunca caducan.</p>
+</div>
+<div class="info-footer-item">
+<h4>🎨 Múltiples Colecciones</h4>
+<p>Cada colección de NFTs tiene su propia página. Explora las colecciones disponibles y mintea personajes únicos.</p>
+</div>
+<div class="info-footer-item">
+<h4>🔒 100% en Blockchain</h4>
+<p>Tus NFTs y tokens FANS están asegurados en BNB Smart Chain. Tú tienes el control total de tus activos.</p>
+</div>
+<div class="info-footer-item">
+<h4>🌐 Accede desde Cualquier Lado</h4>
+<p>Conéctate desde tu PC con MetaMask o desde tu celular con Trust Wallet. ¡Tus NFTs te siguen a todas partes!</p>
+</div>
+</div>
+<div class="info-footer-bottom">
+<p>© 2026 Token FANS - BNB Smart Chain</p>
+</div>
+</footer>
 
 <script>
 var web3, userAccount, tokenContract, nftContract, presaleContract;
@@ -404,9 +454,7 @@ document.getElementById('bnbAmount').addEventListener('input', calcularTokens);
 document.getElementById('btnBuy').addEventListener('click', buyTokens);
 });
 
-function actualizarStatLista() {
-document.getElementById('totalNFTs').textContent = listaNFTs.length;
-}
+function actualizarStatLista() { document.getElementById('totalNFTs').textContent = listaNFTs.length; }
 
 function abrirModalMovil() { if (userAccount) return; document.getElementById('movilModal').style.display = 'flex'; }
 function abrirMetaMask() { window.location.href = 'https://metamask.app.link/dapp/' + window.location.host + window.location.pathname; }
