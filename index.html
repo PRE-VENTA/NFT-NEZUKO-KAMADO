@@ -32,12 +32,53 @@ top: 0;
 left: 0;
 width: 100%;
 height: 100%;
-background: url('https://gateway.pinata.cloud/ipfs/bafybeigbgx2mwjs64shyrwqdrwupk2gznoplajlz6amwgpf7ion4hp7dua') no-repeat center center fixed;
+background: url('https://gateway.pinata.cloud/ipfs/bafybeia42cza6i44lgnlubehfg4pi6frqh7wqtai54xjoyxxzq2xqzlrti') no-repeat center center fixed;
 background-size: cover;
 z-index: -1;
 }
 
 /* SIN CAPA OSCURA - EL FONDO SE VE COMPLETAMENTE CLARO */
+
+/* Estilos para el título hero rediseñado */
+.hero h1 {
+font-size: 4.5rem;
+font-weight: 900;
+background: linear-gradient(180deg, #ffffff 0%, #ffd700 50%, #b8860b 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-shadow: 0 0 40px rgba(255,215,0,0.4);
+margin-bottom: 0.5rem;
+letter-spacing: 3px;
+}
+
+.hero-gratis {
+font-size: 6rem;
+font-weight: 900;
+background: linear-gradient(180deg, #ffd700 0%, #ff6b00 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+text-shadow: 0 0 60px rgba(255,215,0,0.6);
+line-height: 1;
+margin: 0.3rem 0;
+animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.hero-personaje {
+font-size: 2.2rem;
+font-weight: 700;
+color: #ffd700;
+text-shadow: 0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(0,0,0,0.9);
+margin: 0.5rem 0 1.5rem 0;
+letter-spacing: 3px;
+background: linear-gradient(180deg, #ffd700 0%, #fff5cc 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+
+@keyframes pulseGlow {
+0%, 100% { text-shadow: 0 0 40px rgba(255,215,0,0.4); }
+50% { text-shadow: 0 0 80px rgba(255,215,0,0.8), 0 0 120px rgba(255,215,0,0.4); }
+}
 
 /* Todos los elementos con fondo semitransparente para que se lean bien */
 header { background: rgba(26, 26, 46, 0.85); border-bottom: 2px solid #d4af37; padding: 1rem 2rem; position: relative; z-index: 1; backdrop-filter: blur(5px); }
@@ -94,12 +135,6 @@ backdrop-filter: blur(5px);
 @keyframes scrollText { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
 
 .hero { text-align: center; padding: 60px 20px 40px; position: relative; z-index: 1; }
-.hero h1 {
-font-size: 3.5rem; font-weight: 900;
-background: linear-gradient(180deg, #ffffff 0%, #ffd700 50%, #b8860b 100%);
--webkit-background-clip: text; -webkit-text-fill-color: transparent;
-text-shadow: 0 0 30px rgba(255,215,0,0.5);
-}
 .hero p { color: #ffffff; font-size: 1.2rem; max-width: 600px; margin: 0 auto 1.5rem; text-shadow: 0 0 20px rgba(0,0,0,0.8); }
 .btn-gold, .btn-bnb, .btn-upgrade, .btn-red, .btn-next-collection, .btn-inicio {
 padding: 15px 30px; border: none; border-radius: 50px; font-weight: 700; cursor: pointer;
@@ -184,7 +219,7 @@ backdrop-filter: blur(5px);
 #nftSeleccionadoInfo { text-shadow: 0 0 20px rgba(0,0,0,0.8); }
 #miningStatus { text-shadow: 0 0 20px rgba(0,0,0,0.8); }
 .presale-section p { text-shadow: 0 0 20px rgba(0,0,0,0.8); }
-@media (max-width: 600px) { .hero h1 { font-size: 2rem; } .nft-info { grid-template-columns: 1fr; } .mining-buttons { flex-direction: column; } .nft-item { flex-direction: column; text-align: center; } .announcement-bar { font-size: 0.8rem; } }
+@media (max-width: 600px) { .hero h1 { font-size: 2.5rem; } .hero-gratis { font-size: 3.5rem; } .hero-personaje { font-size: 1.5rem; } .nft-info { grid-template-columns: 1fr; } .mining-buttons { flex-direction: column; } .nft-item { flex-direction: column; text-align: center; } .announcement-bar { font-size: 0.8rem; } }
 </style>
 </head>
 <body>
@@ -229,8 +264,12 @@ backdrop-filter: blur(5px);
 </div>
 
 <section class="hero">
-<h1>GANA FANS CON TU PERSONAJE FAVORITO</h1>
-<p>Agrega tus NFTs por ID, mintea gratis y gestiona tu minería de tokens FANS</p>
+<h1>🎨 MINTEA 10 NFT</h1>
+<div class="hero-gratis">🆓 GRATIS</div>
+<div class="hero-personaje">⭐ TU PERSONAJE FAVORITO ⭐</div>
+<p style="color: #ffffff; font-size: 1.2rem; max-width: 600px; margin: 0 auto 1.5rem; text-shadow: 0 0 20px rgba(0,0,0,0.9);">
+Agrega tus NFTs por ID, mintea gratis y gestiona tu minería de tokens FANS
+</p>
 <div>
 <button class="btn-gold" id="btnMint">🎨 Mintear NFT Gratis</button>
 <button class="btn-bnb" id="btnBuyNav">💰 Comprar FANS</button>
