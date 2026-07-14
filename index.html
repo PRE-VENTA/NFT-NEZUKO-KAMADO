@@ -189,6 +189,31 @@ transition: all 0.3s ease; cursor: pointer;
 .social-icon:hover { transform: scale(1.1); }
 .social-icon img { width: 50px; height: 50px; border-radius: 50%; }
 
+/* MODAL MÓVIL */
+.modal {
+display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;
+}
+.modal-content {
+background: linear-gradient(135deg, #2a2a3e, #1a1a2e); border: 2px solid #d4af37;
+padding: 30px; border-radius: 20px; text-align: center; max-width: 400px; width: 90%;
+box-shadow: 0 0 40px rgba(212,175,55,0.3);
+}
+.modal-content h3 { color: #ffd700; margin-bottom: 15px; }
+.modal-content p { color: #a0a0c0; margin-bottom: 15px; }
+.app-btn {
+padding: 12px 20px; border: none; border-radius: 10px; font-weight: 700;
+cursor: pointer; color: white; width: 100%; margin: 5px 0;
+}
+.app-btn.metamask {
+background: linear-gradient(135deg, #4a4a6a 0%, #2a2a4a 100%);
+border: 1px solid #6a6a8a;
+}
+.app-btn.trust {
+background: linear-gradient(135deg, #1a5a4a 0%, #0a3a2a 100%);
+border: 1px solid #3a8a6a;
+}
+
 /* FOOTER INFORMATIVO */
 .info-footer {
 background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(10,10,20,0.95));
@@ -271,13 +296,14 @@ box-shadow: 0 0 30px rgba(212,175,55,0.3);
 </div>
 </div>
 
+<!-- MODAL MÓVIL -->
 <div id="movilModal" class="modal">
 <div class="modal-content">
 <h3>📱 Conectar desde Móvil</h3>
 <p>Elige tu wallet para abrir la app</p>
 <button class="app-btn metamask" id="btnMetaMask">🦊 Abrir en MetaMask</button>
 <button class="app-btn trust" id="btnTrust">🔷 Abrir en Trust Wallet</button>
-<button class="btn-red btn-small" onclick="document.getElementById('movilModal').style.display='none'">❌ Cancelar</button>
+<button class="btn-red btn-small" id="btnCancelarModal">❌ Cancelar</button>
 </div>
 </div>
 
@@ -445,6 +471,7 @@ document.getElementById('connectWallet').addEventListener('click', conectarPC);
 document.getElementById('connectMobile').addEventListener('click', abrirModalMovil);
 document.getElementById('btnMetaMask').addEventListener('click', abrirMetaMask);
 document.getElementById('btnTrust').addEventListener('click', abrirTrustWallet);
+document.getElementById('btnCancelarModal').addEventListener('click', function() { document.getElementById('movilModal').style.display = 'none'; });
 document.getElementById('btnMint').addEventListener('click', mintNFT);
 document.getElementById('btnBuyNav').addEventListener('click', function() { document.getElementById('presale').scrollIntoView({behavior: 'smooth'}); });
 document.getElementById('btnAgregar').addEventListener('click', agregarNFT);
